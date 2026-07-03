@@ -25,7 +25,7 @@ export function useBackendStatus(): UseBackendStatusResult {
       setBackendStatus(isReady ? 'ready' : 'offline');
       setBackendMessage(isReady ? 'Backend conectado' : 'Backend iniciado, pero la base de datos no está lista.');
       return;
-    } catch (healthError) {
+    } catch {
       const nativeStatus = await getNativeServiceStatus().catch(() => null);
       if (nativeStatus?.backendReady) {
         setBackendStatus('ready');
@@ -33,11 +33,7 @@ export function useBackendStatus(): UseBackendStatusResult {
         return;
       }
       setBackendStatus('offline');
-      setBackendMessage(
-        healthError instanceof Error
-          ? healthError.message
-          : 'Backend desconectado. Iniciá los servicios para usar búsqueda e ingesta.',
-      );
+      setBackendMessage('Servicios locales no disponibles.');
     }
   }, []);
 

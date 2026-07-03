@@ -79,7 +79,7 @@ export async function getNativeServiceStatus(): Promise<ServiceStatus | null> {
 export async function startNativeServices(): Promise<void> {
   const startServices = window.go?.main?.App?.StartServices;
   if (!startServices) {
-    throw new Error('Para iniciar servicios automáticamente abrí la app de escritorio. En navegador usá docker compose up --build -d.');
+    throw new Error('Acción disponible desde la app de escritorio.');
   }
   await startServices();
 }
