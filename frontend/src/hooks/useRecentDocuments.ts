@@ -25,7 +25,7 @@ export function useRecentDocuments(isEnabled: boolean): UseRecentDocumentsResult
 
   async function refreshRecentDocuments(): Promise<void> {
     if (!isEnabled) {
-      setRefreshError('Backend desconectado. Iniciá los servicios para ver documentos recientes.');
+      setRefreshError(null);
       return;
     }
 

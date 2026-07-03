@@ -1,11 +1,10 @@
 type HeaderProps = {
   backendStatus: 'checking' | 'ready' | 'offline' | 'starting';
-  backendMessage: string;
   onRetryBackend: () => Promise<void>;
   onStartBackend: () => Promise<void>;
 };
 
-export function Header({ backendStatus, backendMessage, onRetryBackend, onStartBackend }: HeaderProps) {
+export function Header({ backendStatus, onRetryBackend, onStartBackend }: HeaderProps) {
   const statusLabel = buildStatusLabel(backendStatus);
 
   return (
@@ -19,7 +18,6 @@ export function Header({ backendStatus, backendMessage, onRetryBackend, onStartB
       </div>
       <div className="backendStatusPanel">
         <span className={`statusBadge statusBadge-${backendStatus}`}>{statusLabel}</span>
-        <p>{backendMessage}</p>
         <div className="statusActions">
           <button
             type="button"
@@ -46,6 +44,6 @@ export function Header({ backendStatus, backendMessage, onRetryBackend, onStartB
 function buildStatusLabel(status: HeaderProps['backendStatus']): string {
   if (status === 'ready') return 'Backend conectado';
   if (status === 'starting') return 'Iniciando backend';
-  if (status === 'checking') return 'Verificando backend';
-  return 'Backend desconectado';
+  if (status === 'checking') return 'Verificando';
+  return 'Vista previa';
 }

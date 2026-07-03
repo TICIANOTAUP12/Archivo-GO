@@ -22,9 +22,9 @@ export function useSearch(isBackendReady: boolean): UseSearchResult {
     if (!isBackendReady) {
       requestIdRef.current += 1;
       setResults([]);
-      setHasSearched(trimmedQuery.length > 0);
+      setHasSearched(false);
       setIsSearching(false);
-      setError('Backend desconectado. Iniciá los servicios antes de buscar.');
+      setError(null);
       return;
     }
 

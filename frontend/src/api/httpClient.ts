@@ -24,6 +24,5 @@ export async function request<TResponse>(path: string, init: RequestInit = {}): 
 }
 
 function buildNetworkErrorMessage(error: unknown): string {
-  const details = error instanceof Error ? error.message : 'sin detalle';
-  return `Backend desconectado. Iniciá los servicios desde la app de escritorio o ejecutá docker compose up --build -d. Detalle: ${details}`;
+  return error instanceof Error ? 'No pudimos conectar con los servicios locales.' : 'No pudimos conectar.';
 }

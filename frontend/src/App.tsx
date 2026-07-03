@@ -13,7 +13,7 @@ import './App.css';
 
 function App() {
   const [activeSection, setActiveSection] = useState<AppSection>('search');
-  const { backendStatus, backendMessage, isBackendReady, checkBackend, startBackend } = useBackendStatus();
+  const { backendStatus, isBackendReady, checkBackend, startBackend } = useBackendStatus();
   const { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments } = useRecentDocuments(isBackendReady);
 
   return (
@@ -24,7 +24,6 @@ function App() {
           <>
             <Header
               backendStatus={backendStatus}
-              backendMessage={backendMessage}
               onRetryBackend={checkBackend}
               onStartBackend={startBackend}
             />

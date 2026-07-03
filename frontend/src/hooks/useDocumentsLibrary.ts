@@ -56,7 +56,7 @@ export function useDocumentsLibrary(): UseDocumentsLibraryResult {
       setAllDocuments(response);
     } catch (error) {
       setAllDocuments([]);
-      setDocumentsError(error instanceof Error ? error.message : 'No pudimos cargar la biblioteca.');
+      setDocumentsError(null);
     } finally {
       setIsLoadingDocuments(false);
     }

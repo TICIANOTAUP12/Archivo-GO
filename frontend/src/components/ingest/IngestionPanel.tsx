@@ -43,7 +43,6 @@ export function IngestionPanel({ isBackendReady, onIngestComplete }: IngestionPa
       </div>
 
       {error ? <section className="inlineError strong">{error}</section> : null}
-      {!isBackendReady ? <section className="inlineError strong">Backend desconectado. Iniciá los servicios antes de auditar o ingestar.</section> : null}
       {settingsError ? <section className="inlineError strong">{settingsError}</section> : null}
       {settingsMessage ? <p className="successMessage">{settingsMessage}</p> : null}
 
