@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: archivo_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-archivo_digital}
+      POSTGRES_USER: ${POSTGRES_USER:-archivo}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-archivo_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/app/db/schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-archivo} -d ${POSTGRES_DB:-archivo_digital}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - archivo_net
+
+  backend:
+    build:
+      context: ./backend
+    container_name: archivo_backend
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://archivo:archivo_dev_password@postgres:5432/archivo_digital}
+      DEFAULT_PROVIDER: ${DEFAULT_PROVIDER:-google}
+      ENABLE_ANTHROPIC_FALLBACK: ${ENABLE_ANTHROPIC_FALLBACK:-true}
+      MIN_EXTRACTION_CONFIDENCE: ${MIN_EXTRACTION_CONFIDENCE:-0.82}
+      MAX_RUN_BUDGET_USD: ${MAX_RUN_BUDGET_USD:-300}
+      GOOGLE_API_KEY: ${GOOGLE_API_KEY:-}
+      GOOGLE_MODEL: ${GOOGLE_MODEL:-gemini-2.5-flash}
+      GOOGLE_EMBEDDING_MODEL: ${GOOGLE_EMBEDDING_MODEL:-gemini-embedding-001}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
+      OCR_PROVIDER: ${OCR_PROVIDER:-local}
+      EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
+      HOST_INPUT_ROOT: ${HOST_INPUT_ROOT:-C:/Users/ticia}
+      HOST_STORAGE_ROOT: ${HOST_STORAGE_ROOT:-./data/storage}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./data:/app/data
+      - ${HOST_INPUT_ROOT:-C:/Users/ticia}:/host/input:ro
+      - ${HOST_STORAGE_ROOT:-./data/storage}:/host/storage
+    networks:
+      - archivo_net
+
+volumes:
+  postgres_data:
+
+networks:
+  archivo_net:
+    driver: bridge
