@@ -1,4 +1,5 @@
 import type { AuditResponse, DocumentStatus, HealthResponse, IngestResponse, RecentDocument, SearchResult } from '../types';
+import { parseSearchQuery } from '../utils/searchQuery';
 import { request } from './httpClient';
 
 export function auditSource(sourcePath: string, sampleLimit: number): Promise<AuditResponse> {
@@ -26,9 +27,16 @@ export function listDocuments(status: DocumentStatus | 'all' = 'all'): Promise<R
 }
 
 export function searchDocuments(query: string): Promise<SearchResult[]> {
+  const filters = parseSearchQuery(query);
   return request<SearchResult[]>('/search', {
     method: 'POST',
-    body: JSON.stringify({ query, limit: 20 }),
+    body: JSON.stringify({
+      query: filters.query,
+      patente: filters.patente ?? null,
+      numero_caso: filters.numero_caso ?? null,
+      matricula: filters.matricula ?? null,
+      limit: 20,
+    }),
   });
 }
 

@@ -46,14 +46,13 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ./data:/app/data
-      - ${HOST_INPUT_ROOT:-C:/Users/ticia}:/host/input:ro
-      - ${HOST_STORAGE_ROOT:-./data/storage}:/host/storage
+      - archivo_storage_data:/host/storage
     networks:
       - archivo_net
 
 volumes:
   postgres_data:
+  archivo_storage_data:
 
 networks:
   archivo_net:

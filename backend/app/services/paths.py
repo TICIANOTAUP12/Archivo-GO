@@ -3,6 +3,21 @@ from pathlib import Path, PurePosixPath, PureWindowsPath
 
 CONTAINER_INPUT_ROOT = Path("/host/input")
 CONTAINER_STORAGE_ROOT = Path("/host/storage")
+WRITABLE_STORAGE_FALLBACK = Path("/tmp/archivo-storage")
+
+
+def get_container_storage_root() -> Path:
+    for candidate in (CONTAINER_STORAGE_ROOT, WRITABLE_STORAGE_FALLBACK):
+        try:
+            candidate.mkdir(parents=True, exist_ok=True)
+            probe = candidate / ".write_probe"
+            probe.write_text("ok", encoding="utf-8")
+            probe.unlink(missing_ok=True)
+            return candidate
+        except OSError:
+            continue
+    WRITABLE_STORAGE_FALLBACK.mkdir(parents=True, exist_ok=True)
+    return WRITABLE_STORAGE_FALLBACK
 
 
 def resolve_source_path(source_path: str) -> Path:
@@ -18,7 +33,8 @@ def resolve_source_path(source_path: str) -> Path:
 
 
 def to_host_storage_path(container_path: Path) -> str:
-    return _to_host_path(container_path, CONTAINER_STORAGE_ROOT, "HOST_STORAGE_ROOT")
+    storage_root = get_container_storage_root()
+    return _to_host_path(container_path, storage_root, "HOST_STORAGE_ROOT")
 
 
 def to_host_input_path(container_path: Path) -> str:

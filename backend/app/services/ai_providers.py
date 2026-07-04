@@ -11,10 +11,16 @@ MATRICULA_PATTERN = re.compile(
     re.IGNORECASE,
 )
 CASE_PATTERN = re.compile(
-    r"\b(?:n(?:ro|[úu]mero)\.?\s*(?:de\s*)?caso|caso|expediente|denuncia|acta)"
+    r"\b(?:n(?:ro|[úu]mero)\.?\s*(?:de\s*)?caso|caso|expediente|denuncia|acta|tramite|trámite)"
     r"\s*(?:[:#-]|n[°ºo.]*)\s*([A-Z0-9][A-Z0-9./-]{3,30})\b",
     re.IGNORECASE,
 )
+PATENTE_PATTERN = re.compile(
+    r"\b(?:patente|dominio)\s*(?:[:#-]|n[°ºo.]*)\s*([A-Z0-9][A-Z0-9./-]{4,10})\b",
+    re.IGNORECASE,
+)
+OLD_PLATE_PATTERN = re.compile(r"\b([A-Z]{3}\d{3})\b", re.IGNORECASE)
+MERCOSUR_PLATE_PATTERN = re.compile(r"\b([A-Z]{2}\d{3}[A-Z]{2})\b", re.IGNORECASE)
 DATE_PATTERN = re.compile(r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b")
 
 
@@ -113,14 +119,16 @@ async def _embed_with_google(text: str, settings: Settings) -> tuple[list[float]
 
 def _extract_locally(text: str) -> ExtractedFields:
     matricula = _first_match(MATRICULA_PATTERN, text)
+    patente = _extract_patente(text)
     numero_caso = _first_match(CASE_PATTERN, text)
     fecha = _first_match(DATE_PATTERN, text)
-    evidence = _collect_evidence(text, [matricula, numero_caso, fecha])
-    matched_fields = len([value for value in [matricula, numero_caso, fecha] if value])
-    confidence = min(0.35 + (matched_fields * 0.2), 0.78)
+    evidence = _collect_evidence(text, [matricula, patente, numero_caso, fecha])
+    matched_fields = len([value for value in [matricula, patente, numero_caso, fecha] if value])
+    confidence = min(0.35 + (matched_fields * 0.18), 0.82)
 
     return ExtractedFields(
         matricula=matricula,
+        patente=patente,
         numero_caso=numero_caso,
         tipo_documento=_infer_document_type(text),
         fecha_documento=fecha,
@@ -132,8 +140,8 @@ def _extract_locally(text: str) -> ExtractedFields:
 
 def _build_extraction_prompt(text: str) -> str:
     return (
-        "Extrae datos de un documento de inspecciones o denuncias de gas. "
-        "Devuelve solo JSON con las claves matricula, numero_caso, tipo_documento, "
+        "Extrae datos de un documento operativo GNV/ENARGAS. "
+        "Devuelve solo JSON con las claves matricula, patente, numero_caso, tipo_documento, "
         "fecha_documento, resumen, confidence y evidence. Usa null si falta un campo. "
         f"Documento:\n{text[:16_000]}"
     )
@@ -182,6 +190,21 @@ def _tokenize(text: str) -> list[str]:
 def _first_match(pattern: re.Pattern[str], text: str) -> str | None:
     match = pattern.search(text)
     return match.group(1).strip() if match else None
+
+
+def _extract_patente(text: str) -> str | None:
+    labeled = _first_match(PATENTE_PATTERN, text)
+    if labeled:
+        return _normalize_patente(labeled)
+    for pattern in (OLD_PLATE_PATTERN, MERCOSUR_PLATE_PATTERN):
+        match = pattern.search(text.upper())
+        if match:
+            return _normalize_patente(match.group(1))
+    return None
+
+
+def _normalize_patente(value: str) -> str:
+    return re.sub(r"[^A-Z0-9]", "", value.upper())
 
 
 def _collect_evidence(text: str, values: list[str | None]) -> list[str]:

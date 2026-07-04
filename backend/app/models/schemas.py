@@ -74,6 +74,7 @@ class AuditResponse(BaseModel):
 
 class ExtractedFields(BaseModel):
     matricula: str | None = None
+    patente: str | None = None
     numero_caso: str | None = None
     tipo_documento: str | None = None
     fecha_documento: str | None = None
@@ -136,6 +137,7 @@ class DocumentResult(BaseModel):
 class SearchRequest(BaseModel):
     query: str = Field(min_length=1, max_length=500)
     matricula: str | None = None
+    patente: str | None = None
     numero_caso: str | None = None
     limit: int = Field(default=20, ge=1, le=100)
 
@@ -149,6 +151,7 @@ class SearchResult(BaseModel):
     page_number: int
     snippet: str
     matricula: str | None = None
+    patente: str | None = None
     numero_caso: str | None = None
     score: float
 

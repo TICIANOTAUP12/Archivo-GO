@@ -26,7 +26,7 @@ export function SearchBar({ query, isDisabled, isSearching, onQueryChange, onSub
           disabled={isDisabled}
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder={isDisabled ? 'Iniciá el backend para buscar...' : 'Buscar por matrícula, nro de caso, o describir el problema...'}
+          placeholder={isDisabled ? 'Iniciá el backend para buscar...' : 'Buscar por patente, trámite, matrícula o texto libre...'}
         />
         {isSearching ? <span className="spinner" aria-label="Buscando" /> : null}
       </div>

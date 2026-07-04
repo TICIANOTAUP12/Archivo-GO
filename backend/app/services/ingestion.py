@@ -15,6 +15,7 @@ from app.services.document_store import (
 )
 from app.services.inventory import audit_source, discover_supported_files, extract_text_by_page
 from app.services.ocr import ocr_file_by_page
+from app.services.path_metadata import build_search_context, extract_path_metadata, merge_path_metadata
 from app.services.paths import to_host_input_path
 from app.services.storage import archive_original_file
 
@@ -85,9 +86,13 @@ async def _process_file(file_path: Path, run_id: UUID, database: Database, setti
 
     try:
         page_texts = _load_page_texts(file_path, audit)
+        path_metadata = extract_path_metadata(file_path)
+        search_context = build_search_context(file_path)
         for page_number, text_content in enumerate(page_texts, start=1):
-            fields, provider, usage = await extract_fields(text_content, settings)
-            embedding, embedding_usage = await embed_text(text_content, settings)
+            enriched_text = f"{search_context}\n{text_content}".strip()
+            fields, provider, usage = await extract_fields(enriched_text, settings)
+            fields = merge_path_metadata(fields, path_metadata)
+            embedding, embedding_usage = await embed_text(enriched_text, settings)
             usage.embedding_tokens += embedding_usage.embedding_tokens
             usage.cost_usd += embedding_usage.cost_usd
             async with database.acquire() as connection:
@@ -95,7 +100,7 @@ async def _process_file(file_path: Path, run_id: UUID, database: Database, setti
                     connection,
                     document_id,
                     page_number,
-                    text_content,
+                    enriched_text,
                     audit.is_probably_scanned,
                     provider.value,
                     fields,

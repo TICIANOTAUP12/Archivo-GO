@@ -47,6 +47,7 @@ export function ResultCard({ result, query }: ResultCardProps) {
         </div>
 
         <div className="badgeRow">
+          <span className="badge">Patente: {result.patente ?? 'Sin dato'}</span>
           <span className="badge">Mat: {result.matricula ?? 'Sin dato'}</span>
           <span className="badge">Caso: {result.numero_caso ?? 'Sin dato'}</span>
           <span className="badge subtleBadge">Página {result.page_number}</span>
@@ -60,9 +61,10 @@ export function ResultCard({ result, query }: ResultCardProps) {
 }
 
 function buildResultTitle(result: SearchResult): string {
+  if (result.patente) return `Patente ${result.patente}`;
   const primary = result.matricula ? `Matrícula ${result.matricula}` : 'Documento encontrado';
   if (!result.numero_caso) return primary;
-  return `${primary} · Caso ${result.numero_caso}`;
+  return `${primary} · Trámite ${result.numero_caso}`;
 }
 
 function renderHighlightedSnippet(snippet: string, query: string): ReactNode[] {
