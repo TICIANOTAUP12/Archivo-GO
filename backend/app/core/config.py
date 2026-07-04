@@ -11,7 +11,14 @@ class Settings(BaseSettings):
     database_url: str = "postgresql://archivo:archivo_dev_password@localhost:5432/archivo_digital"
     backend_host: str = "0.0.0.0"
     backend_port: int = 8080
-    cors_origins: list[str] = Field(default_factory=lambda: ["http://localhost:5173"])
+    cors_origins: list[str] = Field(
+        default_factory=lambda: [
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+            "https://wails.localhost",
+            "http://wails.localhost",
+        ]
+    )
 
     default_provider: Literal["google", "anthropic", "local"] = "google"
     ocr_provider: Literal["google", "local"] = "local"

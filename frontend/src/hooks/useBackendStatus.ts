@@ -45,7 +45,13 @@ export function useBackendStatus(): UseBackendStatusResult {
       await checkBackend();
     } catch (error) {
       setBackendStatus('offline');
-      setBackendMessage(error instanceof Error ? error.message : 'No pudimos iniciar los servicios.');
+      const detail = error instanceof Error ? error.message : 'No pudimos iniciar los servicios.';
+      const isBrowserDev = typeof window.go?.main?.App?.StartServices !== 'function';
+      setBackendMessage(
+        isBrowserDev
+          ? `${detail} Desde el navegador, levantá Docker manualmente: docker compose up -d en la carpeta Archivo-GO.`
+          : detail,
+      );
     }
   }
 

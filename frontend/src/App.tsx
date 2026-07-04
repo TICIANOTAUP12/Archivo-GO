@@ -7,14 +7,14 @@ import { MainContainer } from './components/layout/MainContainer';
 import { SidebarNavigation, type AppSection } from './components/layout/SidebarNavigation';
 import { SmartSearchArea } from './components/search/SmartSearchArea';
 import { SettingsPanel } from './components/settings/SettingsPanel';
-import { useBackendStatus } from './hooks/useBackendStatus';
 import { useRecentDocuments } from './hooks/useRecentDocuments';
+import { useBackendBootstrap } from './hooks/useBackendBootstrap';
 import './App.css';
 
 function App() {
+  useBackendBootstrap();
   const [activeSection, setActiveSection] = useState<AppSection>('search');
-  const { backendStatus, isBackendReady, checkBackend, startBackend } = useBackendStatus();
-  const { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments } = useRecentDocuments(isBackendReady);
+  const { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments } = useRecentDocuments();
 
   return (
     <div className="appFrame">
@@ -22,12 +22,8 @@ function App() {
       <MainContainer>
         {activeSection === 'search' ? (
           <>
-            <Header
-              backendStatus={backendStatus}
-              onRetryBackend={checkBackend}
-              onStartBackend={startBackend}
-            />
-            <SmartSearchArea isBackendReady={isBackendReady} />
+            <Header />
+            <SmartSearchArea />
           </>
         ) : null}
 
@@ -41,7 +37,7 @@ function App() {
               </p>
             </div>
             <section className="grid">
-              <IngestionPanel isBackendReady={isBackendReady} onIngestComplete={refreshRecentDocuments} />
+              <IngestionPanel onIngestComplete={refreshRecentDocuments} />
               <RecentDocuments
                 documents={recentDocuments}
                 isRefreshing={isRefreshing}

@@ -2,13 +2,12 @@ import type { FormEvent } from 'react';
 
 type SearchBarProps = {
   query: string;
-  isDisabled: boolean;
   isSearching: boolean;
   onQueryChange: (query: string) => void;
   onSubmit: () => void;
 };
 
-export function SearchBar({ query, isDisabled, isSearching, onQueryChange, onSubmit }: SearchBarProps) {
+export function SearchBar({ query, isSearching, onQueryChange, onSubmit }: SearchBarProps) {
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     onSubmit();
@@ -23,10 +22,9 @@ export function SearchBar({ query, isDisabled, isSearching, onQueryChange, onSub
         <input
           autoFocus
           className="spotlightInput"
-          disabled={isDisabled}
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder={isDisabled ? 'Iniciá el backend para buscar...' : 'Buscar por patente, trámite, matrícula o texto libre...'}
+          placeholder="Buscar por patente, trámite, matrícula o texto libre..."
         />
         {isSearching ? <span className="spinner" aria-label="Buscando" /> : null}
       </div>

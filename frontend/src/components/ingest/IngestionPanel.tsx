@@ -5,11 +5,10 @@ import { AuditSummary } from './AuditSummary';
 import { ProgressUpload } from './ProgressUpload';
 
 type IngestionPanelProps = {
-  isBackendReady: boolean;
   onIngestComplete: () => Promise<void>;
 };
 
-export function IngestionPanel({ isBackendReady, onIngestComplete }: IngestionPanelProps) {
+export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
   const [sampleLimit, setSampleLimit] = useState<number>(500);
   const { audit, ingest, isAuditing, isIngesting, error, performAudit, performIngest } =
     useIngest(onIngestComplete);
@@ -26,7 +25,7 @@ export function IngestionPanel({ isBackendReady, onIngestComplete }: IngestionPa
   } = useWorkspaceSettings();
   const hasSourcePath = settings.inputPath.trim().length > 0;
   const hasStoragePath = settings.storagePath.trim().length > 0;
-  const canRun = isBackendReady && hasSourcePath && hasStoragePath && !isSavingSettings;
+  const canRun = hasSourcePath && hasStoragePath && !isSavingSettings;
 
   function handleAudit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();

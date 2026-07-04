@@ -1,10 +1,12 @@
 import { useState, type ReactNode } from 'react';
 import { openNativeFile } from '../../api/native';
 import type { SearchResult } from '../../types';
+import { cleanSnippet, shortFilename } from '../../utils/groupSearchResults';
 
 type ResultCardProps = {
   result: SearchResult;
   query: string;
+  matchedPages: number[];
 };
 
 type HighlightRange = {
@@ -12,10 +14,13 @@ type HighlightRange = {
   end: number;
 };
 
-export function ResultCard({ result, query }: ResultCardProps) {
+export function ResultCard({ result, query, matchedPages }: ResultCardProps) {
   const [isOpening, setIsOpening] = useState<boolean>(false);
   const [openError, setOpenError] = useState<string | null>(null);
-  const title = buildResultTitle(result);
+  const headline = buildHeadline(result);
+  const metaItems = buildMetaItems(result);
+  const pageLabel = buildPageLabel(result.page_number, matchedPages);
+  const preview = cleanSnippet(result.snippet);
 
   async function handleOpenFile(): Promise<void> {
     setIsOpening(true);
@@ -32,39 +37,68 @@ export function ResultCard({ result, query }: ResultCardProps) {
 
   return (
     <article className="resultCard">
-      <div className="pdfIcon" aria-hidden="true">
-        PDF
-      </div>
-      <div className="resultContent">
-        <div className="resultHeader">
-          <div>
-            <h3>{title}</h3>
-            <p>{result.filename}</p>
+      <div className="resultMain">
+        <div className="resultTopRow">
+          <div className="resultIdentity">
+            <h3>{headline}</h3>
+            <p className="resultFilename" title={result.filename}>
+              {shortFilename(result.filename)}
+            </p>
           </div>
-          <button className="ghostButton" type="button" disabled={isOpening} onClick={() => void handleOpenFile()}>
-            {isOpening ? 'Abriendo...' : 'Abrir archivo'}
+          <button className="ghostButton compactOpenButton" type="button" disabled={isOpening} onClick={() => void handleOpenFile()}>
+            {isOpening ? '…' : 'Abrir'}
           </button>
         </div>
 
-        <div className="badgeRow">
-          <span className="badge">Patente: {result.patente ?? 'Sin dato'}</span>
-          <span className="badge">Mat: {result.matricula ?? 'Sin dato'}</span>
-          <span className="badge">Caso: {result.numero_caso ?? 'Sin dato'}</span>
-          <span className="badge subtleBadge">Página {result.page_number}</span>
-        </div>
+        {metaItems.length > 0 ? (
+          <dl className="resultMeta">
+            {metaItems.map((item) => (
+              <div key={item.label} className="resultMetaItem">
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+            <div className="resultMetaItem">
+              <dt>Páginas</dt>
+              <dd>{pageLabel}</dd>
+            </div>
+          </dl>
+        ) : null}
 
-        <p className="snippet">{renderHighlightedSnippet(result.snippet, query)}</p>
+        {preview ? <p className="snippetPreview">{renderHighlightedSnippet(preview, query)}</p> : null}
         {openError ? <p className="inlineError">{openError}</p> : null}
       </div>
     </article>
   );
 }
 
-function buildResultTitle(result: SearchResult): string {
-  if (result.patente) return `Patente ${result.patente}`;
-  const primary = result.matricula ? `Matrícula ${result.matricula}` : 'Documento encontrado';
-  if (!result.numero_caso) return primary;
-  return `${primary} · Trámite ${result.numero_caso}`;
+function buildHeadline(result: SearchResult): string {
+  if (result.patente) return result.patente;
+  if (result.numero_caso) return `Trámite ${result.numero_caso}`;
+  if (result.matricula) return `Matrícula ${result.matricula}`;
+  return 'Documento';
+}
+
+function buildMetaItems(result: SearchResult): Array<{ label: string; value: string }> {
+  const items: Array<{ label: string; value: string }> = [];
+
+  if (result.patente && result.numero_caso) {
+    items.push({ label: 'Trámite', value: result.numero_caso });
+  } else if (result.numero_caso && !result.patente) {
+    items.push({ label: 'Expediente', value: result.numero_caso });
+  }
+
+  if (result.matricula) {
+    items.push({ label: 'Matrícula', value: result.matricula });
+  }
+
+  return items;
+}
+
+function buildPageLabel(primaryPage: number, matchedPages: number[]): string {
+  if (matchedPages.length <= 1) return String(primaryPage);
+  if (matchedPages.length <= 4) return matchedPages.join(', ');
+  return `${primaryPage} (+${matchedPages.length - 1} más)`;
 }
 
 function renderHighlightedSnippet(snippet: string, query: string): ReactNode[] {
@@ -79,9 +113,7 @@ function renderHighlightedSnippet(snippet: string, query: string): ReactNode[] {
       fragments.push(snippet.slice(cursor, range.start));
     }
 
-    fragments.push(
-      <mark key={`${range.start}-${range.end}`}>{snippet.slice(range.start, range.end)}</mark>,
-    );
+    fragments.push(<mark key={`${range.start}-${range.end}`}>{snippet.slice(range.start, range.end)}</mark>);
     cursor = range.end;
   });
 

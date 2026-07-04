@@ -53,7 +53,7 @@ func (app *App) Startup(ctx context.Context) {
 }
 
 func (app *App) Shutdown(ctx context.Context) {
-	_ = app.StopServices()
+	// El backend Docker queda corriendo de forma independiente al cerrar la app.
 }
 
 func (app *App) StartServices() error {
@@ -64,10 +64,10 @@ func (app *App) StartServices() error {
 	if err := ensureWorkspaceDirectories(settings); err != nil {
 		return err
 	}
-	if err := runCommandWithSettings(settings, "docker", "compose", "up", "-d", "--build", "--force-recreate"); err != nil {
+	if err := runCommandWithSettings(settings, "docker", "compose", "up", "-d"); err != nil {
 		return err
 	}
-	return waitForBackend("http://localhost:8080/health", 45*time.Second)
+	return waitForBackend("http://localhost:8080/health", 90*time.Second)
 }
 
 func (app *App) StopServices() error {

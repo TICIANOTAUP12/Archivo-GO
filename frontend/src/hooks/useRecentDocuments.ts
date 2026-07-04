@@ -9,26 +9,12 @@ type UseRecentDocumentsResult = {
   refreshRecentDocuments: () => Promise<void>;
 };
 
-export function useRecentDocuments(isEnabled: boolean): UseRecentDocumentsResult {
+export function useRecentDocuments(): UseRecentDocumentsResult {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!isEnabled) {
-      setRecentDocuments([]);
-      setRefreshError(null);
-      return;
-    }
-    void refreshRecentDocuments();
-  }, [isEnabled]);
-
   async function refreshRecentDocuments(): Promise<void> {
-    if (!isEnabled) {
-      setRefreshError(null);
-      return;
-    }
-
     setIsRefreshing(true);
     setRefreshError(null);
 
@@ -42,6 +28,10 @@ export function useRecentDocuments(isEnabled: boolean): UseRecentDocumentsResult
       setIsRefreshing(false);
     }
   }
+
+  useEffect(() => {
+    void refreshRecentDocuments();
+  }, []);
 
   return { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments };
 }

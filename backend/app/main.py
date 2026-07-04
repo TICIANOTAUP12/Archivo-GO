@@ -22,9 +22,11 @@ async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
 settings = get_settings()
 app = FastAPI(title="Archivo Digital Inteligente", version="0.1.0", lifespan=lifespan)
 
+cors_origins = ["*"] if settings.app_env != "production" else settings.cors_origins
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -10,7 +10,7 @@ type UseSearchResult = {
   performSearch: (query: string) => Promise<void>;
 };
 
-export function useSearch(isBackendReady: boolean): UseSearchResult {
+export function useSearch(): UseSearchResult {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [hasSearched, setHasSearched] = useState<boolean>(false);
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -19,14 +19,6 @@ export function useSearch(isBackendReady: boolean): UseSearchResult {
 
   const performSearch = useCallback(async (query: string): Promise<void> => {
     const trimmedQuery = query.trim();
-    if (!isBackendReady) {
-      requestIdRef.current += 1;
-      setResults([]);
-      setHasSearched(false);
-      setIsSearching(false);
-      setError(null);
-      return;
-    }
 
     if (!trimmedQuery) {
       requestIdRef.current += 1;
@@ -54,7 +46,7 @@ export function useSearch(isBackendReady: boolean): UseSearchResult {
     } finally {
       if (requestId === requestIdRef.current) setIsSearching(false);
     }
-  }, [isBackendReady]);
+  }, []);
 
   return { results, hasSearched, isSearching, error, performSearch };
 }

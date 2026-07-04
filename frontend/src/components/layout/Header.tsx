@@ -1,12 +1,4 @@
-type HeaderProps = {
-  backendStatus: 'checking' | 'ready' | 'offline' | 'starting';
-  onRetryBackend: () => Promise<void>;
-  onStartBackend: () => Promise<void>;
-};
-
-export function Header({ backendStatus, onRetryBackend, onStartBackend }: HeaderProps) {
-  const statusLabel = buildStatusLabel(backendStatus);
-
+export function Header() {
   return (
     <header className="hero">
       <div>
@@ -16,34 +8,6 @@ export function Header({ backendStatus, onRetryBackend, onStartBackend }: Header
           Encontrá matrículas, números de caso e incidentes sin navegar carpetas manualmente.
         </p>
       </div>
-      <div className="backendStatusPanel">
-        <span className={`statusBadge statusBadge-${backendStatus}`}>{statusLabel}</span>
-        <div className="statusActions">
-          <button
-            type="button"
-            className="secondary compactButton"
-            disabled={backendStatus === 'checking' || backendStatus === 'starting'}
-            onClick={() => void onRetryBackend()}
-          >
-            Reintentar
-          </button>
-          <button
-            type="button"
-            className="compactButton"
-            disabled={backendStatus === 'checking' || backendStatus === 'starting'}
-            onClick={() => void onStartBackend()}
-          >
-            Iniciar servicios
-          </button>
-        </div>
-      </div>
     </header>
   );
-}
-
-function buildStatusLabel(status: HeaderProps['backendStatus']): string {
-  if (status === 'ready') return 'Backend conectado';
-  if (status === 'starting') return 'Iniciando backend';
-  if (status === 'checking') return 'Verificando';
-  return 'Vista previa';
 }

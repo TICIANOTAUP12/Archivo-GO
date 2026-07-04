@@ -11,7 +11,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./backend/app/db/schema.sql:/docker-entrypoint-initdb.d/001_schema.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-archivo} -d ${POSTGRES_DB:-archivo_digital}"]
       interval: 10s
@@ -27,6 +26,7 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: ${DATABASE_URL:-postgresql://archivo:archivo_dev_password@postgres:5432/archivo_digital}
+      APP_ENV: ${APP_ENV:-development}
       DEFAULT_PROVIDER: ${DEFAULT_PROVIDER:-google}
       ENABLE_ANTHROPIC_FALLBACK: ${ENABLE_ANTHROPIC_FALLBACK:-true}
       MIN_EXTRACTION_CONFIDENCE: ${MIN_EXTRACTION_CONFIDENCE:-0.82}
@@ -46,13 +46,13 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - archivo_storage_data:/host/storage
+      - ${HOST_INPUT_ROOT:-./data/source}:/host/input:ro
+      - ${HOST_STORAGE_ROOT:-./data/storage}:/host/storage
     networks:
       - archivo_net
 
 volumes:
   postgres_data:
-  archivo_storage_data:
 
 networks:
   archivo_net:

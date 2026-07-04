@@ -37,6 +37,7 @@ export function searchDocuments(query: string): Promise<SearchResult[]> {
       matricula: filters.matricula ?? null,
       limit: 20,
     }),
+    timeoutMs: 120_000,
   });
 }
 

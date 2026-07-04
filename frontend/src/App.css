@@ -236,10 +236,12 @@ p {
   text-align: right;
 }
 
-.backendStatusPanel p {
+.backendStatusPanel p,
+.statusHint {
   color: #66758a;
   font-size: 0.9rem;
   margin: 0;
+  max-width: 320px;
 }
 
 .statusActions {
@@ -573,10 +575,127 @@ p {
 }
 
 .resultCard {
+  padding: 16px 18px;
+}
+
+.resultMain {
+  min-width: 0;
+}
+
+.resultTopRow {
+  align-items: flex-start;
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.resultIdentity {
+  min-width: 0;
+}
+
+.resultTopRow h3 {
+  font-size: 1.2rem;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.resultFilename {
+  color: #66758a;
+  font-size: 0.88rem;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.compactOpenButton {
+  flex-shrink: 0;
+  min-width: 72px;
+}
+
+.resultMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  margin: 12px 0 0;
+}
+
+.resultMetaItem {
   display: grid;
-  gap: 16px;
-  grid-template-columns: auto minmax(0, 1fr);
-  padding: 18px;
+  gap: 2px;
+}
+
+.resultMetaItem dt {
+  color: #8a99ad;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.resultMetaItem dd {
+  color: #1e3354;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.snippetPreview {
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  color: #4a5d78;
+  display: -webkit-box;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  margin: 12px 0 0;
+  overflow: hidden;
+}
+
+.resultsPanel {
+  margin-top: 8px;
+}
+
+.resultsSummary {
+  color: #66758a;
+  font-size: 0.9rem;
+  margin: 0 0 12px 2px;
+}
+
+.searchHints {
+  margin-top: 14px;
+}
+
+.searchHintsLabel {
+  color: #8a99ad;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin: 0 0 8px 4px;
+}
+
+.searchHintsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.searchHintChip {
+  background: #f5f8fc;
+  border: 1px solid #d6e1ef;
+  border-radius: 999px;
+  color: #24456f;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.searchHintChip:hover {
+  background: #eef4ff;
+  border-color: #b8ccf5;
 }
 
 .pdfIcon {

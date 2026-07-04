@@ -39,13 +39,19 @@ async def search_documents(request: SearchRequest, database: Database, settings:
                         @@ plainto_tsquery('spanish', $1)
                     OR p.embedding <=> $2::vector < 0.75
                     OR ($5::text IS NOT NULL AND (
-                        p.extracted_fields->>'patente' = $5
+                        upper(coalesce(p.extracted_fields->>'patente', '')) = $5
                         OR d.filename ILIKE '%' || $5 || '%'
                         OR d.source_path ILIKE '%' || $5 || '%'
+                        OR coalesce(p.text_content, '') ILIKE '%' || $5 || '%'
                     ))
                 )
                 AND ($3::text IS NULL OR p.extracted_fields->>'matricula' = $3)
-                AND ($4::text IS NULL OR p.extracted_fields->>'numero_caso' = $4)
+                AND ($4::text IS NULL OR (
+                    p.extracted_fields->>'numero_caso' = $4
+                    OR p.extracted_fields->>'numero_caso' ILIKE $4 || '%'
+                    OR coalesce(p.text_content, '') ILIKE '%' || $4 || '%'
+                    OR d.filename ILIKE '%' || $4 || '%'
+                ))
             ORDER BY score DESC
             LIMIT $6
             """,
