@@ -27,6 +27,9 @@ export type ServiceStatus = {
   message: string;
 };
 
+const desktopBridgeUnavailableMessage =
+  'Esta acción requiere abrir la aplicación de escritorio Wails, no sólo el navegador de desarrollo.';
+
 declare global {
   interface Window {
     go?: {
@@ -43,7 +46,7 @@ export async function openNativeFile(sourcePath: string): Promise<void> {
 
   const openFile = window.go?.main?.App?.OpenFile;
   if (!openFile) {
-    throw new Error('Abrir archivos está disponible dentro de la app de escritorio.');
+    throw new Error(desktopBridgeUnavailableMessage);
   }
 
   await openFile(trimmedPath);
@@ -58,14 +61,16 @@ export async function getWorkspaceSettings(): Promise<WorkspaceSettings | null> 
 export async function saveWorkspaceSettings(settings: WorkspaceSettings): Promise<void> {
   const saveSettings = window.go?.main?.App?.SaveWorkspaceSettings;
   if (!saveSettings) {
-    throw new Error('Guardar carpetas está disponible dentro de la app de escritorio.');
+    throw new Error(desktopBridgeUnavailableMessage);
   }
   await saveSettings(settings);
 }
 
 export async function selectNativeDirectory(title: string): Promise<string | null> {
   const selectDirectory = window.go?.main?.App?.SelectDirectory;
-  if (!selectDirectory) return null;
+  if (!selectDirectory) {
+    throw new Error(desktopBridgeUnavailableMessage);
+  }
   const selectedPath = await selectDirectory(title);
   return selectedPath.trim().length > 0 ? selectedPath : null;
 }
@@ -79,7 +84,7 @@ export async function getNativeServiceStatus(): Promise<ServiceStatus | null> {
 export async function startNativeServices(): Promise<void> {
   const startServices = window.go?.main?.App?.StartServices;
   if (!startServices) {
-    throw new Error('Acción disponible desde la app de escritorio.');
+    throw new Error(desktopBridgeUnavailableMessage);
   }
   await startServices();
 }

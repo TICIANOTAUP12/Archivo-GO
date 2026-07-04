@@ -102,13 +102,23 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
   }
 
   async function selectInputPath(): Promise<void> {
-    const selectedPath = await selectNativeDirectory('Seleccionar carpeta de origen');
-    if (selectedPath) setInputPath(selectedPath);
+    setSettingsError(null);
+    try {
+      const selectedPath = await selectNativeDirectory('Seleccionar carpeta de origen');
+      if (selectedPath) setInputPath(selectedPath);
+    } catch (error) {
+      setSettingsError(error instanceof Error ? error.message : 'No pudimos seleccionar la carpeta de origen.');
+    }
   }
 
   async function selectStoragePath(): Promise<void> {
-    const selectedPath = await selectNativeDirectory('Seleccionar carpeta donde guardar casos');
-    if (selectedPath) setStoragePath(selectedPath);
+    setSettingsError(null);
+    try {
+      const selectedPath = await selectNativeDirectory('Seleccionar carpeta donde guardar casos');
+      if (selectedPath) setStoragePath(selectedPath);
+    } catch (error) {
+      setSettingsError(error instanceof Error ? error.message : 'No pudimos seleccionar la carpeta de destino.');
+    }
   }
 
   async function persistSettings(): Promise<void> {
@@ -117,7 +127,7 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettingsMessage(null);
     try {
       await saveWorkspaceSettings(settings);
-      setSettingsMessage('Configuración guardada. Los servicios fueron reiniciados con los valores actuales.');
+      setSettingsMessage('Configuración guardada. Los servicios fueron reiniciados con carpetas y APIs actuales.');
     } catch (error) {
       setSettingsError(error instanceof Error ? error.message : 'No pudimos guardar la configuración.');
     } finally {
