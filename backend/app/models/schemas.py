@@ -139,6 +139,7 @@ class SearchRequest(BaseModel):
     matricula: str | None = None
     patente: str | None = None
     numero_caso: str | None = None
+    persona: str | None = None
     limit: int = Field(default=20, ge=1, le=100)
 
 
@@ -153,6 +154,7 @@ class SearchResult(BaseModel):
     matricula: str | None = None
     patente: str | None = None
     numero_caso: str | None = None
+    match_kind: str | None = None
     score: float
 
 

@@ -66,6 +66,7 @@ export type SearchResult = {
   matricula: string | null;
   patente: string | null;
   numero_caso: string | null;
+  match_kind: string | null;
   score: number;
 };
 

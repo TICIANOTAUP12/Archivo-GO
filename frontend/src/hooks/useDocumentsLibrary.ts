@@ -16,15 +16,16 @@ type UseDocumentsLibraryResult = {
 
 const documentStatuses: DocumentStatus[] = ['pending', 'processing', 'indexed', 'needs_review', 'failed'];
 
-export function useDocumentsLibrary(): UseDocumentsLibraryResult {
+export function useDocumentsLibrary(isBackendReady: boolean): UseDocumentsLibraryResult {
   const [allDocuments, setAllDocuments] = useState<RecentDocument[]>([]);
   const [activeFilter, setActiveFilter] = useState<DocumentFilter>('all');
   const [isLoadingDocuments, setIsLoadingDocuments] = useState<boolean>(false);
   const [documentsError, setDocumentsError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!isBackendReady) return;
     void refreshDocuments();
-  }, []);
+  }, [isBackendReady]);
 
   const documents = useMemo(() => {
     if (activeFilter === 'all') return allDocuments;

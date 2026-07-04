@@ -35,6 +35,7 @@ export function searchDocuments(query: string): Promise<SearchResult[]> {
       patente: filters.patente ?? null,
       numero_caso: filters.numero_caso ?? null,
       matricula: filters.matricula ?? null,
+      persona: filters.persona ?? null,
       limit: 20,
     }),
     timeoutMs: 120_000,

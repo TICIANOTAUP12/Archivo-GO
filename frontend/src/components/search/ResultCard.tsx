@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { openNativeFile } from '../../api/native';
+import { openDocumentFile } from '../../api/native';
 import type { SearchResult } from '../../types';
 import { cleanSnippet, shortFilename } from '../../utils/groupSearchResults';
 
@@ -21,13 +21,14 @@ export function ResultCard({ result, query, matchedPages }: ResultCardProps) {
   const metaItems = buildMetaItems(result);
   const pageLabel = buildPageLabel(result.page_number, matchedPages);
   const preview = cleanSnippet(result.snippet);
+  const matchLabel = buildMatchLabel(result.match_kind);
 
   async function handleOpenFile(): Promise<void> {
     setIsOpening(true);
     setOpenError(null);
 
     try {
-      await openNativeFile(result.storage_path ?? result.source_path);
+      await openDocumentFile(result.storage_path, result.source_path);
     } catch (error) {
       setOpenError(error instanceof Error ? error.message : 'No pudimos abrir el archivo.');
     } finally {
@@ -40,7 +41,10 @@ export function ResultCard({ result, query, matchedPages }: ResultCardProps) {
       <div className="resultMain">
         <div className="resultTopRow">
           <div className="resultIdentity">
-            <h3>{headline}</h3>
+            <div className="resultTitleRow">
+              <h3>{headline}</h3>
+              {matchLabel ? <span className="matchKindBadge">{matchLabel}</span> : null}
+            </div>
             <p className="resultFilename" title={result.filename}>
               {shortFilename(result.filename)}
             </p>
@@ -70,6 +74,15 @@ export function ResultCard({ result, query, matchedPages }: ResultCardProps) {
       </div>
     </article>
   );
+}
+
+function buildMatchLabel(matchKind: string | null): string | null {
+  if (!matchKind) return null;
+  if (matchKind === 'patente') return 'Patente';
+  if (matchKind === 'tramite') return 'Trámite';
+  if (matchKind === 'persona') return 'Persona';
+  if (matchKind === 'matricula') return 'Matrícula';
+  return 'Texto';
 }
 
 function buildHeadline(result: SearchResult): string {

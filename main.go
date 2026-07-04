@@ -15,7 +15,7 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:  "Archivo Digital Inteligente",
+		Title:  "Archivo de SCIVOLI GNC",
 		Width:  1200,
 		Height: 820,
 		AssetServer: &assetserver.Options{

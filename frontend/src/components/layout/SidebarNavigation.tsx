@@ -22,10 +22,10 @@ export function SidebarNavigation({ activeSection, onSectionChange }: SidebarNav
   return (
     <aside className="sidebar">
       <div className="sidebarBrand">
-        <span className="brandMark">AD</span>
+        <span className="brandMark">SG</span>
         <div>
-          <strong>Archivo Digital</strong>
-          <span>Inteligente</span>
+          <strong>Archivo de</strong>
+          <span>SCIVOLI GNC</span>
         </div>
       </div>
 

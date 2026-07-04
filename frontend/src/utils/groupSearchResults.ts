@@ -39,7 +39,19 @@ export function cleanSnippet(text: string, maxLength = 220): string {
 }
 
 export function shortFilename(filename: string): string {
-  const decoded = decodeURIComponent(filename);
+  const decoded = safeDecodeFilename(filename);
   if (decoded.length <= 56) return decoded;
   return `…${decoded.slice(-53)}`;
+}
+
+function safeDecodeFilename(filename: string): string {
+  if (!filename.includes('%')) return filename;
+
+  const sanitized = filename.replace(/%(?![0-9A-Fa-f]{2})/g, '%25');
+
+  try {
+    return decodeURIComponent(sanitized);
+  } catch {
+    return filename;
+  }
 }

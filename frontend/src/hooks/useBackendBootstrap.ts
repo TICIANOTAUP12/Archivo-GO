@@ -1,6 +1,15 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { checkBackendHealth } from '../api/endpoints';
-import { startNativeServices } from '../api/native';
+import { getNativeServiceStatus, startNativeServices } from '../api/native';
+
+export type BackendBootstrapStatus = 'checking' | 'ready' | 'offline' | 'starting';
+
+type UseBackendBootstrapResult = {
+  backendStatus: BackendBootstrapStatus;
+  backendMessage: string;
+  isBackendReady: boolean;
+  retryBackend: () => Promise<void>;
+};
 
 const MAX_ATTEMPTS = 40;
 const RETRY_DELAY_MS = 3000;
@@ -19,26 +28,64 @@ async function isBackendHealthy(): Promise<boolean> {
   }
 }
 
-export function useBackendBootstrap(): void {
-  useEffect(() => {
-    let cancelled = false;
+export function useBackendBootstrap(): UseBackendBootstrapResult {
+  const [backendStatus, setBackendStatus] = useState<BackendBootstrapStatus>('checking');
+  const [backendMessage, setBackendMessage] = useState('Verificando servicios locales...');
 
-    async function ensureBackendReady(): Promise<void> {
-      if (await isBackendHealthy()) return;
+  const ensureBackendReady = useCallback(async (): Promise<void> => {
+    setBackendStatus('checking');
+    setBackendMessage('Verificando servicios locales...');
 
-      await startNativeServices().catch(() => undefined);
-      await sleep(STARTUP_DELAY_MS);
-
-      for (let attempt = 0; attempt < MAX_ATTEMPTS && !cancelled; attempt += 1) {
-        if (await isBackendHealthy()) return;
-        await sleep(RETRY_DELAY_MS);
-      }
+    if (await isBackendHealthy()) {
+      setBackendStatus('ready');
+      setBackendMessage('Backend conectado');
+      return;
     }
 
-    void ensureBackendReady();
+    setBackendStatus('starting');
+    setBackendMessage('Iniciando Docker y backend local...');
 
-    return () => {
-      cancelled = true;
-    };
+    try {
+      await startNativeServices().catch(() => undefined);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : 'No pudimos iniciar los servicios.';
+      setBackendStatus('offline');
+      setBackendMessage(detail);
+      return;
+    }
+
+    await sleep(STARTUP_DELAY_MS);
+
+    for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
+      if (await isBackendHealthy()) {
+        setBackendStatus('ready');
+        setBackendMessage('Backend conectado');
+        return;
+      }
+      await sleep(RETRY_DELAY_MS);
+    }
+
+    const nativeStatus = await getNativeServiceStatus().catch(() => null);
+    if (nativeStatus?.backendReady) {
+      setBackendStatus('ready');
+      setBackendMessage(nativeStatus.message);
+      return;
+    }
+
+    setBackendStatus('offline');
+    setBackendMessage(
+      'Backend local no disponible. Abrí Docker Desktop y ejecutá: docker compose up -d en Archivo-GO.',
+    );
   }, []);
+
+  useEffect(() => {
+    void ensureBackendReady();
+  }, [ensureBackendReady]);
+
+  return {
+    backendStatus,
+    backendMessage,
+    isBackendReady: backendStatus === 'ready',
+    retryBackend: ensureBackendReady,
+  };
 }

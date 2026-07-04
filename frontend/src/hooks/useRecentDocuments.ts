@@ -9,7 +9,7 @@ type UseRecentDocumentsResult = {
   refreshRecentDocuments: () => Promise<void>;
 };
 
-export function useRecentDocuments(): UseRecentDocumentsResult {
+export function useRecentDocuments(isBackendReady: boolean): UseRecentDocumentsResult {
   const [recentDocuments, setRecentDocuments] = useState<RecentDocument[]>([]);
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
@@ -30,8 +30,9 @@ export function useRecentDocuments(): UseRecentDocumentsResult {
   }
 
   useEffect(() => {
+    if (!isBackendReady) return;
     void refreshRecentDocuments();
-  }, []);
+  }, [isBackendReady]);
 
   return { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments };
 }

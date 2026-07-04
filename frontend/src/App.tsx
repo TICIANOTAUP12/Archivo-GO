@@ -12,18 +12,30 @@ import { useBackendBootstrap } from './hooks/useBackendBootstrap';
 import './App.css';
 
 function App() {
-  useBackendBootstrap();
+  const { backendStatus, backendMessage, isBackendReady, retryBackend } = useBackendBootstrap();
   const [activeSection, setActiveSection] = useState<AppSection>('search');
-  const { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments } = useRecentDocuments();
+  const { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments } =
+    useRecentDocuments(isBackendReady);
 
   return (
     <div className="appFrame">
       <SidebarNavigation activeSection={activeSection} onSectionChange={setActiveSection} />
       <MainContainer>
+        {backendStatus !== 'ready' ? (
+          <section className="backendBanner" data-status={backendStatus}>
+            <p>{backendMessage}</p>
+            {backendStatus === 'offline' ? (
+              <button type="button" className="secondary compactButton" onClick={() => void retryBackend()}>
+                Reintentar conexión
+              </button>
+            ) : null}
+          </section>
+        ) : null}
+
         {activeSection === 'search' ? (
           <>
             <Header />
-            <SmartSearchArea />
+            <SmartSearchArea isBackendReady={isBackendReady} />
           </>
         ) : null}
 
@@ -48,7 +60,7 @@ function App() {
           </section>
         ) : null}
 
-        {activeSection === 'documents' ? <DocumentsLibrary /> : null}
+        {activeSection === 'documents' ? <DocumentsLibrary isBackendReady={isBackendReady} /> : null}
         {activeSection === 'settings' ? <SettingsPanel /> : null}
       </MainContainer>
     </div>

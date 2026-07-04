@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { openNativeFile } from '../../api/native';
+import { openDocumentFile } from '../../api/native';
 import { useDocumentsLibrary, type DocumentFilter } from '../../hooks/useDocumentsLibrary';
 import type { DocumentStatus, RecentDocument } from '../../types';
 
@@ -20,7 +20,11 @@ const filterOptions: Array<{ value: DocumentFilter; label: string }> = [
   { value: 'failed', label: 'Fallidos' },
 ];
 
-export function DocumentsLibrary() {
+type DocumentsLibraryProps = {
+  isBackendReady: boolean;
+};
+
+export function DocumentsLibrary({ isBackendReady }: DocumentsLibraryProps) {
   const {
     documents,
     activeFilter,
@@ -29,7 +33,7 @@ export function DocumentsLibrary() {
     totalsByStatus,
     setActiveFilter,
     refreshDocuments,
-  } = useDocumentsLibrary();
+  } = useDocumentsLibrary(isBackendReady);
   const [documentQuery, setDocumentQuery] = useState<string>('');
   const normalizedQuery = documentQuery.trim().toLocaleLowerCase('es');
 
@@ -122,7 +126,7 @@ function DocumentLibraryCard({ document }: { document: RecentDocument }) {
     setIsOpening(true);
 
     try {
-      await openNativeFile(document.source_path);
+      await openDocumentFile(document.storage_path, document.source_path);
     } catch (error) {
       setOpenError(error instanceof Error ? error.message : 'No pudimos abrir el archivo.');
     } finally {

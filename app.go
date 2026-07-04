@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/http"
 	"os"
 	"os/exec"
@@ -67,7 +68,31 @@ func (app *App) StartServices() error {
 	if err := runCommandWithSettings(settings, "docker", "compose", "up", "-d"); err != nil {
 		return err
 	}
+	if err := syncInputFolderToContainer(settings.InputPath); err != nil {
+		return err
+	}
 	return waitForBackend("http://localhost:8080/health", 90*time.Second)
+}
+
+func syncInputFolderToContainer(inputPath string) error {
+	if inputPath == "" {
+		return errors.New("input path is required")
+	}
+	if hasContainerInputFiles() {
+		return nil
+	}
+	cleanPath := filepath.Clean(inputPath)
+	if _, err := os.Stat(cleanPath); err != nil {
+		return fmt.Errorf("input path is not available: %w", err)
+	}
+	source := filepath.ToSlash(cleanPath) + "/."
+	return runCommand("docker", "cp", source, "archivo_backend:/host/input/")
+}
+
+func hasContainerInputFiles() bool {
+	command := exec.Command("docker", "exec", "archivo_backend", "sh", "-c", "ls -A /host/input | head -1")
+	output, err := command.Output()
+	return err == nil && strings.TrimSpace(string(output)) != ""
 }
 
 func (app *App) StopServices() error {
@@ -107,14 +132,138 @@ func (app *App) ServiceStatus() ServiceStatus {
 }
 
 func (app *App) OpenFile(path string) error {
-	if path == "" {
-		return errors.New("file path is required")
+	return app.OpenDocument("", path)
+}
+
+func (app *App) OpenDocument(storagePath, sourcePath string) error {
+	resolvedPath, err := resolveDocumentOpenPath(storagePath, sourcePath)
+	if err != nil {
+		return err
 	}
-	cleanPath := filepath.Clean(path)
-	if _, err := os.Stat(cleanPath); err != nil {
-		return fmt.Errorf("file is not available: %w", err)
+	return openFile(resolvedPath)
+}
+
+func resolveDocumentOpenPath(storagePath, sourcePath string) (string, error) {
+	candidates := buildDocumentOpenCandidates(storagePath, sourcePath)
+	for _, candidate := range candidates {
+		if fileExists(candidate) {
+			return candidate, nil
+		}
 	}
-	return openFile(cleanPath)
+	if len(candidates) == 0 {
+		return "", errors.New("no hay una ruta de archivo disponible para abrir")
+	}
+	return "", fmt.Errorf("archivo no encontrado en el equipo (probó %d rutas)", len(candidates))
+}
+
+func buildDocumentOpenCandidates(storagePath, sourcePath string) []string {
+	settings, settingsErr := loadWorkspaceSettings()
+	projectRoot, rootErr := os.Getwd()
+	if rootErr != nil {
+		projectRoot = ""
+	}
+
+	var candidates []string
+	addCandidate := func(path string) {
+		path = strings.TrimSpace(path)
+		if path == "" {
+			return
+		}
+		cleanPath := filepath.Clean(path)
+		for _, existing := range candidates {
+			if existing == cleanPath {
+				return
+			}
+		}
+		candidates = append(candidates, cleanPath)
+	}
+
+	addCandidate(storagePath)
+	addCandidate(sourcePath)
+
+	if projectRoot != "" {
+		for _, path := range []string{storagePath, sourcePath} {
+			if path != "" && !filepath.IsAbs(path) {
+				addCandidate(filepath.Join(projectRoot, path))
+			}
+		}
+	}
+
+	if settingsErr == nil {
+		for _, path := range []string{storagePath, sourcePath} {
+			if mapped := mapStorageAlias(path, settings.StoragePath); mapped != "" {
+				addCandidate(mapped)
+			}
+		}
+
+		filename := filepath.Base(strings.TrimSpace(storagePath))
+		if filename == "." || filename == "" {
+			filename = filepath.Base(strings.TrimSpace(sourcePath))
+		}
+		if filename != "" && filename != "." {
+			addCandidate(filepath.Join(settings.StoragePath, "casos", filename))
+			if found, ok := findFileByName(settings.StoragePath, filename); ok {
+				addCandidate(found)
+			}
+			if found, ok := findFileByName(settings.InputPath, filename); ok {
+				addCandidate(found)
+			}
+		}
+	}
+
+	return candidates
+}
+
+func mapStorageAlias(path, storageRoot string) string {
+	path = strings.TrimSpace(path)
+	if path == "" || storageRoot == "" {
+		return ""
+	}
+
+	slashPath := filepath.ToSlash(path)
+	prefixes := []string{"data/storage/", "/host/storage/"}
+	for _, prefix := range prefixes {
+		if strings.HasPrefix(slashPath, prefix) {
+			relative := strings.TrimPrefix(slashPath, prefix)
+			return filepath.Join(storageRoot, filepath.FromSlash(relative))
+		}
+	}
+	return ""
+}
+
+func findFileByName(root, filename string) (string, bool) {
+	root = strings.TrimSpace(root)
+	filename = strings.TrimSpace(filename)
+	if root == "" || filename == "" {
+		return "", false
+	}
+
+	info, err := os.Stat(root)
+	if err != nil || !info.IsDir() {
+		return "", false
+	}
+
+	var found string
+	_ = filepath.WalkDir(root, func(path string, entry fs.DirEntry, walkErr error) error {
+		if walkErr != nil || found != "" {
+			return nil
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		if entry.Name() == filename {
+			found = path
+			return fs.SkipAll
+		}
+		return nil
+	})
+
+	return found, found != ""
+}
+
+func fileExists(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir()
 }
 
 func runCommand(name string, args ...string) error {

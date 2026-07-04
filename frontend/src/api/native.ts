@@ -1,5 +1,6 @@
 type NativeAppBinding = {
   GetWorkspaceSettings?: () => Promise<WorkspaceSettings>;
+  OpenDocument?: (storagePath: string, sourcePath: string) => Promise<void>;
   OpenFile?: (sourcePath: string) => Promise<void>;
   SaveWorkspaceSettings?: (settings: WorkspaceSettings) => Promise<void>;
   SelectDirectory?: (title: string) => Promise<string>;
@@ -38,6 +39,23 @@ declare global {
       };
     };
   }
+}
+
+export async function openDocumentFile(storagePath: string | null | undefined, sourcePath: string): Promise<void> {
+  const trimmedSourcePath = sourcePath.trim();
+  const trimmedStoragePath = storagePath?.trim() ?? '';
+
+  if (!trimmedStoragePath && !trimmedSourcePath) {
+    throw new Error('No hay una ruta de archivo disponible para abrir.');
+  }
+
+  const openDocument = window.go?.main?.App?.OpenDocument;
+  if (openDocument) {
+    await openDocument(trimmedStoragePath, trimmedSourcePath);
+    return;
+  }
+
+  await openNativeFile(trimmedStoragePath || trimmedSourcePath);
 }
 
 export async function openNativeFile(sourcePath: string): Promise<void> {

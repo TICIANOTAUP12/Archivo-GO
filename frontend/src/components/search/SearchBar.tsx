@@ -24,7 +24,7 @@ export function SearchBar({ query, isSearching, onQueryChange, onSubmit }: Searc
           className="spotlightInput"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
-          placeholder="Buscar por patente, trámite, matrícula o texto libre..."
+          placeholder="Patente, trámite, matrícula, nombre o empresa..."
         />
         {isSearching ? <span className="spinner" aria-label="Buscando" /> : null}
       </div>

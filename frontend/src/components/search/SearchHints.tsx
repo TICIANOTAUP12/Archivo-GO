@@ -3,11 +3,11 @@ type SearchHintsProps = {
 };
 
 const SAMPLE_SEARCHES = [
-  { label: 'XLF030', hint: 'Patente muestra' },
-  { label: 'BNI831', hint: 'Patente ENARGAS' },
-  { label: '45710274', hint: 'Trámite' },
-  { label: '73919692', hint: 'Trámite bulk' },
-  { label: '135087762', hint: 'Trámite IF' },
+  { label: 'XLF030', hint: 'Patente' },
+  { label: '73919692', hint: 'Trámite' },
+  { label: '18032', hint: 'Matrícula METROGAS' },
+  { label: 'Luis Rensin', hint: 'Persona' },
+  { label: 'SCIVOLI', hint: 'Empresa' },
   { label: 'ENARGAS', hint: 'Texto libre' },
 ] as const;
 
@@ -24,7 +24,8 @@ export function SearchHints({ onSelect }: SearchHintsProps) {
             title={sample.hint}
             onClick={() => onSelect(sample.label)}
           >
-            {sample.label}
+            <span>{sample.label}</span>
+            <small>{sample.hint}</small>
           </button>
         ))}
       </div>

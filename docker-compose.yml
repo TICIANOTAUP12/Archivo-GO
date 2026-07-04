@@ -38,7 +38,7 @@ services:
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
       OCR_PROVIDER: ${OCR_PROVIDER:-local}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
-      HOST_INPUT_ROOT: ${HOST_INPUT_ROOT:-C:/Users/ticia}
+      HOST_INPUT_ROOT: ${HOST_INPUT_ROOT:-./data/source}
       HOST_STORAGE_ROOT: ${HOST_STORAGE_ROOT:-./data/storage}
     ports:
       - "8080:8080"
@@ -46,13 +46,15 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - ${HOST_INPUT_ROOT:-./data/source}:/host/input:ro
-      - ${HOST_STORAGE_ROOT:-./data/storage}:/host/storage
+      - archivo_input_data:/host/input
+      - archivo_storage_data:/host/storage
     networks:
       - archivo_net
 
 volumes:
   postgres_data:
+  archivo_input_data:
+  archivo_storage_data:
 
 networks:
   archivo_net:
