@@ -1,5 +1,7 @@
 # Archivo Digital Inteligente
 
+[![Release](https://img.shields.io/github/v/release/TICIANOTAUP12/Archivo-GO?label=release)](https://github.com/TICIANOTAUP12/Archivo-GO/releases)
+
 Aplicacion de escritorio hibrida para auditar, ingestar, extraer e indexar documentos de una agencia de gas. El MVP combina Wails + Go para la capa desktop, FastAPI para procesamiento, PostgreSQL + pgvector para persistencia/busqueda y proveedores IA configurables.
 
 ## Arquitectura
@@ -8,6 +10,17 @@ Aplicacion de escritorio hibrida para auditar, ingestar, extraer e indexar docum
 - `frontend/`: UI React + TypeScript para auditoria, ingesta, revision y busqueda.
 - `app.go` / `main.go`: bindings de Wails y orquestacion basica del backend Docker.
 - `docker-compose.yml`: PostgreSQL con pgvector y backend Python.
+
+## Releases
+
+Los ejecutables de Windows se publican en [GitHub Releases](https://github.com/TICIANOTAUP12/Archivo-GO/releases). Cada tag `v*` dispara el workflow `.github/workflows/release.yml`, que compila la app con Wails y adjunta el `.exe` y un `.zip`.
+
+Para cortar un release nuevo:
+
+```powershell
+git tag v0.1.1
+git push origin v0.1.1
+```
 
 ## Inicio Rapido
 
