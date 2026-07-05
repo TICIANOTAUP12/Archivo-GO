@@ -127,7 +127,7 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettingsMessage(null);
     try {
       await saveWorkspaceSettings(settings);
-      setSettingsMessage('Configuración guardada. Los servicios fueron reiniciados con carpetas y APIs actuales.');
+      setSettingsMessage('Configuración guardada. Los servicios fueron reiniciados con la carpeta de origen y APIs actuales.');
     } catch (error) {
       setSettingsError(error instanceof Error ? error.message : 'No pudimos guardar la configuración.');
     } finally {

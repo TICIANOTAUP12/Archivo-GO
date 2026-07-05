@@ -18,14 +18,11 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
     settingsMessage,
     settingsError,
     setInputPath,
-    setStoragePath,
     selectInputPath,
-    selectStoragePath,
     persistSettings,
   } = useWorkspaceSettings();
   const hasSourcePath = settings.inputPath.trim().length > 0;
-  const hasStoragePath = settings.storagePath.trim().length > 0;
-  const canRun = hasSourcePath && hasStoragePath && !isSavingSettings;
+  const canRun = hasSourcePath && !isSavingSettings;
 
   function handleAudit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -46,44 +43,28 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
       {settingsMessage ? <p className="successMessage">{settingsMessage}</p> : null}
 
       <form onSubmit={handleAudit}>
-        <div className="pathPickerGrid">
-          <label>
-            De dónde tomar documentos
-            <div className="pathPicker">
-              <input
-                value={settings.inputPath}
-                onChange={(event) => setInputPath(event.target.value)}
-                placeholder="Seleccioná la carpeta de PDFs e imágenes"
-                required
-              />
-              <button type="button" className="secondary compactButton" onClick={() => void selectInputPath()}>
-                Seleccionar
-              </button>
-            </div>
-          </label>
-          <label>
-            Dónde guardar casos procesados
-            <div className="pathPicker">
-              <input
-                value={settings.storagePath}
-                onChange={(event) => setStoragePath(event.target.value)}
-                placeholder="Seleccioná la carpeta destino del archivo digital"
-                required
-              />
-              <button type="button" className="secondary compactButton" onClick={() => void selectStoragePath()}>
-                Seleccionar
-              </button>
-            </div>
-          </label>
-        </div>
+        <label>
+          Carpeta de documentos en esta PC
+          <div className="pathPicker">
+            <input
+              value={settings.inputPath}
+              onChange={(event) => setInputPath(event.target.value)}
+              placeholder="Seleccioná la carpeta de PDFs e imágenes"
+              required
+            />
+            <button type="button" className="secondary compactButton" onClick={() => void selectInputPath()}>
+              Seleccionar
+            </button>
+          </div>
+        </label>
 
         <button
           type="button"
           className="secondary"
-          disabled={!hasSourcePath || !hasStoragePath || isSavingSettings}
+          disabled={!hasSourcePath || isSavingSettings}
           onClick={() => void persistSettings()}
         >
-          {isSavingSettings ? 'Guardando carpetas...' : 'Guardar carpetas de esta PC'}
+          {isSavingSettings ? 'Guardando carpeta...' : 'Guardar carpeta de origen'}
         </button>
         <label>
           Muestra

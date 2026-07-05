@@ -8,8 +8,6 @@ export function SettingsPanel() {
     isSavingSettings,
     settingsMessage,
     settingsError,
-    setInputPath,
-    setStoragePath,
     setDefaultProvider,
     setGoogleApiKey,
     setGoogleModel,
@@ -20,13 +18,9 @@ export function SettingsPanel() {
     setEnableAnthropicFallback,
     setMinExtractionConfidence,
     setMaxRunBudgetUsd,
-    selectInputPath,
-    selectStoragePath,
     persistSettings,
   } = useWorkspaceSettings();
   const { serviceStatus, isCheckingStatus, refreshServiceStatus } = useServiceStatus();
-  const hasSourcePath = settings.inputPath.trim().length > 0;
-  const hasStoragePath = settings.storagePath.trim().length > 0;
 
   return (
     <section className="panelStack">
@@ -60,53 +54,6 @@ export function SettingsPanel() {
         <span className={serviceStatus?.backendReady ? 'statusBadge' : 'statusBadge warning'}>
           {serviceStatus?.backendReady ? 'Backend conectado' : 'Backend sin confirmar'}
         </span>
-      </section>
-
-      <section className="card settingsGrid">
-        <div>
-          <h2>Carpetas de trabajo</h2>
-          <p className="muted">
-            Definí desde dónde toma los documentos y dónde guarda las copias organizadas.
-          </p>
-        </div>
-
-        <label>
-          De dónde tomar documentos
-          <div className="pathPicker">
-            <input
-              value={settings.inputPath}
-              onChange={(event) => setInputPath(event.target.value)}
-              placeholder="Seleccioná la carpeta de PDFs e imágenes"
-              required
-            />
-            <button
-              type="button"
-              className="secondary compactButton"
-              onClick={() => void selectInputPath()}
-            >
-              Seleccionar
-            </button>
-          </div>
-        </label>
-
-        <label>
-          Dónde guardar casos procesados
-          <div className="pathPicker">
-            <input
-              value={settings.storagePath}
-              onChange={(event) => setStoragePath(event.target.value)}
-              placeholder="Seleccioná la carpeta destino del archivo digital"
-              required
-            />
-            <button
-              type="button"
-              className="secondary compactButton"
-              onClick={() => void selectStoragePath()}
-            >
-              Seleccionar
-            </button>
-          </div>
-        </label>
       </section>
 
       <section className="card settingsGrid">
@@ -217,10 +164,10 @@ export function SettingsPanel() {
       {settingsMessage ? <section className="successMessage">{settingsMessage}</section> : null}
       <button
         type="button"
-        disabled={isSavingSettings || !hasSourcePath || !hasStoragePath}
+        disabled={isSavingSettings}
         onClick={() => void persistSettings()}
       >
-        {isSavingSettings ? 'Guardando configuración...' : 'Guardar carpetas, IA y reiniciar servicios'}
+        {isSavingSettings ? 'Guardando configuración...' : 'Guardar IA y reiniciar servicios'}
       </button>
     </section>
   );

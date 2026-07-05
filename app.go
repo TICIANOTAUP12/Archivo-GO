@@ -289,7 +289,7 @@ func runCommandWithSettings(settings WorkspaceSettings, name string, args ...str
 
 func ensureDefaultWorkspaceSettings() error {
 	settings, err := loadWorkspaceSettings()
-	if err == nil && settings.InputPath != "" && settings.StoragePath != "" {
+	if err == nil && settings.InputPath != "" {
 		return nil
 	}
 
@@ -374,6 +374,11 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 	if settings.MaxRunBudgetUSD == 0 {
 		settings.MaxRunBudgetUSD = 300
 	}
+	if settings.StoragePath == "" {
+		if projectRoot, err := os.Getwd(); err == nil {
+			settings.StoragePath = filepath.Join(projectRoot, "data", "storage")
+		}
+	}
 	if isLegacySettings {
 		settings.EnableAnthropicFallback = true
 	}
@@ -399,9 +404,7 @@ func workspaceSettingsEnv(settings WorkspaceSettings) []string {
 	if settings.GoogleAPIKey != "" {
 		env = append(env, "GOOGLE_API_KEY="+settings.GoogleAPIKey)
 	}
-	if settings.AnthropicAPIKey != "" {
-		env = append(env, "ANTHROPIC_API_KEY="+settings.AnthropicAPIKey)
-	}
+	env = append(env, "ANTHROPIC_API_KEY="+settings.AnthropicAPIKey)
 	return env
 }
 
