@@ -50,7 +50,9 @@ func NewApp() *App {
 func (app *App) Startup(ctx context.Context) {
 	app.ctx = ctx
 	_ = ensureDefaultWorkspaceSettings()
-	_ = app.StartServices()
+	go func() {
+		_ = app.StartServices()
+	}()
 }
 
 func (app *App) Shutdown(ctx context.Context) {

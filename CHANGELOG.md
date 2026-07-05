@@ -1,5 +1,20 @@
 # Changelog
 
+## v0.1.2 — 2026-07-05
+
+Build dedicado para **Windows 7 de 32 bits** y arranque de UI sin bloquear por Docker.
+
+### Cambios
+
+- Script `scripts/build-win7-386.ps1`: Wails 2.8.1 + Go 1.20 + WebView2 embed + loader legacy.
+- CI publica `ArchivoScivoliGNC-*-windows-386-win7.exe` además de amd64/386 modernos.
+- `OnStartup` ya no bloquea la ventana esperando Docker (Win7 no tiene Docker Desktop).
+
+### Assets Win7
+
+- `ArchivoScivoliGNC-*-windows-386-win7.exe` — usar en PCs con "Equipo basado en X86" / Windows 7.
+- Requiere WebView2 Runtime instalado manualmente.
+
 ## v0.1.1 — 2026-07-05
 
 Release con builds separados para Windows 64 y 32 bits.
