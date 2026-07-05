@@ -67,16 +67,26 @@ try {
     $webviewCabUrl = "https://github.com/westinyang/WebView2RuntimeArchive/releases/download/109.0.1518.78/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x86.cab"
     $cabPath = Join-Path $env:TEMP "Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x86.cab"
     Write-Host "Downloading WebView2 109 x86 runtime..."
-    Invoke-WebRequest -Uri $webviewCabUrl -OutFile $cabPath
+    curl.exe -L --retry 3 --retry-delay 5 -o $cabPath $webviewCabUrl
+    if ((Get-Item $cabPath).Length -lt 100MB) {
+        throw "WebView2 cab download looks incomplete: $cabPath"
+    }
 
-    $webviewDir = Join-Path $bundleDir "webview2"
-    New-Item -ItemType Directory -Force -Path $webviewDir | Out-Null
+    $webviewExtractRoot = Join-Path $env:TEMP "webview2-extract"
+    if (Test-Path $webviewExtractRoot) {
+        Remove-Item $webviewExtractRoot -Recurse -Force
+    }
+    New-Item -ItemType Directory -Force -Path $webviewExtractRoot | Out-Null
     Write-Host "Extracting WebView2 runtime..."
-    expand.exe $cabPath -F:* $webviewDir | Out-Null
+    expand.exe $cabPath -F:* $webviewExtractRoot | Out-Null
 
-    if (-not (Test-Path (Join-Path $webviewDir "msedgewebview2.exe"))) {
+    $runtimeExe = Get-ChildItem $webviewExtractRoot -Recurse -Filter "msedgewebview2.exe" | Select-Object -First 1
+    if (-not $runtimeExe) {
         throw "WebView2 runtime extraction failed: msedgewebview2.exe not found"
     }
+
+    $webviewDir = Join-Path $bundleDir "webview2"
+    Copy-Item $runtimeExe.Directory.FullName (Join-Path $bundleDir "webview2") -Recurse -Force
 
     Copy-Item (Join-Path $repoRoot "docs\WIN7-INSTALACION.md") (Join-Path $bundleDir "LEEME-WIN7.txt") -Force
 
