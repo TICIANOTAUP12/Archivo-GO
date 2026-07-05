@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.1 — 2026-07-05
+
+Release con builds separados para Windows 64 y 32 bits.
+
+### Assets
+
+- `ArchivoScivoliGNC-*-windows-amd64.exe` / `.zip` — PCs de 64 bits.
+- `ArchivoScivoliGNC-*-windows-386.exe` / `.zip` — PCs de 32 bits (X86).
+
 ## v0.1.0 — 2026-07-04
 
 Primer release publico de la app de escritorio **Archivo de SCIVOLI GNC**.

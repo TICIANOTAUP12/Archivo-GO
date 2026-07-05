@@ -13,8 +13,18 @@ env:
 
 jobs:
   build-windows:
-    name: Build Windows desktop app
+    name: Build Windows desktop app (${{ matrix.arch }})
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            platform: windows/amd64
+            artifact_suffix: windows-amd64
+          - arch: "386"
+            platform: windows/386
+            artifact_suffix: windows-386
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -41,20 +51,38 @@ jobs:
 
       - name: Build application
         shell: pwsh
-        run: wails build -platform windows/amd64 -clean
+        run: wails build -platform ${{ matrix.platform }} -clean
 
       - name: Package artifacts
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path artifacts | Out-Null
-          Copy-Item build\bin\ArchivoScivoliGNC.exe artifacts\
           $version = "${{ github.ref_name }}" -replace '^v', ''
-          Compress-Archive -Path artifacts\ArchivoScivoliGNC.exe -DestinationPath "artifacts\ArchivoScivoliGNC-$version-windows-amd64.zip"
+          $suffix = "${{ matrix.artifact_suffix }}"
+          $exeName = "ArchivoScivoliGNC-$version-$suffix.exe"
+          Copy-Item build\bin\ArchivoScivoliGNC.exe "artifacts\$exeName"
+          Compress-Archive -Path "artifacts\$exeName" -DestinationPath "artifacts\ArchivoScivoliGNC-$version-$suffix.zip"
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.artifact_suffix }}
+          path: artifacts/*
+          if-no-files-found: error
+
+  publish-release:
+    name: Publish GitHub Release
+    needs: build-windows
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            artifacts/ArchivoScivoliGNC.exe
-            artifacts/ArchivoScivoliGNC-*-windows-amd64.zip
+          files: artifacts/*
           generate_release_notes: true

@@ -13,7 +13,14 @@ Aplicacion de escritorio hibrida para auditar, ingestar, extraer e indexar docum
 
 ## Releases
 
-Los ejecutables de Windows se publican en [GitHub Releases](https://github.com/TICIANOTAUP12/Archivo-GO/releases). Cada tag `v*` dispara el workflow `.github/workflows/release.yml`, que compila la app con Wails y adjunta el `.exe` y un `.zip`.
+Los ejecutables de Windows se publican en [GitHub Releases](https://github.com/TICIANOTAUP12/Archivo-GO/releases). Cada tag `v*` dispara el workflow `.github/workflows/release.yml`, que compila la app con Wails en **64 bits (`windows-amd64`)** y **32 bits (`windows-386`)**, y adjunta un `.exe` y un `.zip` por arquitectura.
+
+| PC del cliente | Descargar |
+|---|---|
+| Windows 64 bits | `ArchivoScivoliGNC-*-windows-amd64.exe` |
+| Windows 32 bits | `ArchivoScivoliGNC-*-windows-386.exe` |
+
+Requisitos adicionales en la PC cliente: **Docker Desktop** (Win10/11 64 bits), **WebView2 Runtime** y, en equipos viejos, revisar compatibilidad de Windows 7.
 
 Para cortar un release nuevo:
 
