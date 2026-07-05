@@ -37,6 +37,11 @@ try {
         throw "Wails CLI not found at $wails"
     }
 
+    Push-Location frontend
+    npm ci
+    npm run build
+    Pop-Location
+
     & $wails build `
         -platform windows/386 `
         -clean `
