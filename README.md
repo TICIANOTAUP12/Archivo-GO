@@ -19,9 +19,9 @@ Los ejecutables de Windows se publican en [GitHub Releases](https://github.com/T
 |---|---|
 | Windows 10/11 de 64 bits | `ArchivoScivoliGNC-*-windows-amd64.exe` |
 | Windows 10/11 de 32 bits | `ArchivoScivoliGNC-*-windows-386.exe` |
-| **Windows 7 de 32 bits (X86)** | `ArchivoScivoliGNC-*-windows-386-win7.exe` |
+| **Windows 7 de 32 bits (X86)** | `ArchivoScivoliGNC-*-windows-386-win7.zip` (incluye WebView2 109 x86) |
 
-**Windows 7:** además del `.exe` correcto, instalar [WebView2 Runtime](https://developer.microsoft.com/microsoft-edge/webview2/) (versión Evergreen). Sin WebView2 la ventana queda en blanco o no abre. El backend Docker **no corre en Windows 7**; la UI puede abrir pero el servicio quedará offline.
+**Windows 7:** no usar el instalador WebView2 moderno (no es compatible). Descargar el **ZIP Win7**, descomprimir completo y ejecutar el `.exe` con la carpeta `webview2` al lado. Ver `docs/WIN7-INSTALACION.md`.
 
 Para cortar un release nuevo:
 

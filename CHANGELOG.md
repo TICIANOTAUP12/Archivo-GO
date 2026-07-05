@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.3 — 2026-07-05
+
+Paquete Win7 incluye **WebView2 109 x86** embebido (última versión compatible con Windows 7).
+
+### Cambios
+
+- El zip `windows-386-win7` trae carpeta `webview2/` + `LEEME-WIN7.txt`.
+- La app detecta `webview2/` junto al `.exe` (`WebviewBrowserPath`).
+- Ya no usa el bootstrapper WebView2 moderno (fallaba en Win7).
+
 ## v0.1.2 — 2026-07-05
 
 Build dedicado para **Windows 7 de 32 bits** y arranque de UI sin bloquear por Docker.

@@ -46,7 +46,7 @@ try {
         -platform windows/386 `
         -clean `
         -compiler go1.20.14 `
-        -webview2 embed `
+        -webview2 error `
         -tags native_webview2loader
 
     $built = Join-Path $repoRoot "build\bin\ArchivoScivoliGNC.exe"
@@ -54,13 +54,40 @@ try {
         throw "Expected build output not found: $built"
     }
 
-    New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
+    $bundleDir = Join-Path $repoRoot "build\win7-bundle"
+    if (Test-Path $bundleDir) {
+        Remove-Item $bundleDir -Recurse -Force
+    }
+    New-Item -ItemType Directory -Force -Path $bundleDir | Out-Null
+
     $version = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME -replace '^v', '' } else { "local" }
     $exeName = "ArchivoScivoliGNC-$version-windows-386-win7.exe"
+    Copy-Item $built (Join-Path $bundleDir $exeName) -Force
+
+    $webviewCabUrl = "https://github.com/westinyang/WebView2RuntimeArchive/releases/download/109.0.1518.78/Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x86.cab"
+    $cabPath = Join-Path $env:TEMP "Microsoft.WebView2.FixedVersionRuntime.109.0.1518.78.x86.cab"
+    Write-Host "Downloading WebView2 109 x86 runtime..."
+    Invoke-WebRequest -Uri $webviewCabUrl -OutFile $cabPath
+
+    $webviewDir = Join-Path $bundleDir "webview2"
+    New-Item -ItemType Directory -Force -Path $webviewDir | Out-Null
+    Write-Host "Extracting WebView2 runtime..."
+    expand.exe $cabPath -F:* $webviewDir | Out-Null
+
+    if (-not (Test-Path (Join-Path $webviewDir "msedgewebview2.exe"))) {
+        throw "WebView2 runtime extraction failed: msedgewebview2.exe not found"
+    }
+
+    Copy-Item (Join-Path $repoRoot "docs\WIN7-INSTALACION.md") (Join-Path $bundleDir "LEEME-WIN7.txt") -Force
+
+    New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
     $zipName = "ArchivoScivoliGNC-$version-windows-386-win7.zip"
-    Copy-Item $built (Join-Path $OutputDir $exeName) -Force
-    Compress-Archive -Path (Join-Path $OutputDir $exeName) -DestinationPath (Join-Path $OutputDir $zipName) -Force
-    Write-Host "Built Win7 binary: $(Join-Path $OutputDir $exeName)"
+    if (Test-Path (Join-Path $OutputDir $zipName)) {
+        Remove-Item (Join-Path $OutputDir $zipName) -Force
+    }
+    Compress-Archive -Path (Join-Path $bundleDir "*") -DestinationPath (Join-Path $OutputDir $zipName)
+    Copy-Item (Join-Path $bundleDir $exeName) (Join-Path $OutputDir $exeName) -Force
+    Write-Host "Built Win7 bundle: $(Join-Path $OutputDir $zipName)"
 }
 finally {
     Set-Content go.mod $goModBackup -NoNewline
