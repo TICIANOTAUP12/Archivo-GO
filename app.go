@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,6 +31,7 @@ type ServiceStatus struct {
 }
 
 type WorkspaceSettings struct {
+	BackendURL                string  `json:"backendUrl"`
 	InputPath               string  `json:"inputPath"`
 	StoragePath             string  `json:"storagePath"`
 	DefaultProvider         string  `json:"defaultProvider"`
@@ -78,7 +80,8 @@ func (app *App) StartServices() error {
 	if err := syncInputFolderToContainer(settings.InputPath); err != nil {
 		return err
 	}
-	return waitForBackend("http://localhost:8080/health", 90*time.Second)
+	healthURL := normalizeBackendURL(settings.BackendURL) + "/health"
+	return waitForBackend(healthURL, 90*time.Second)
 }
 
 func syncInputFolderToContainer(inputPath string) error {
@@ -154,8 +157,13 @@ func (app *App) SelectDirectory(title string) (string, error) {
 }
 
 func (app *App) ServiceStatus() ServiceStatus {
+	settings, settingsErr := loadWorkspaceSettings()
+	healthURL := "http://localhost:8080/health"
+	if settingsErr == nil {
+		healthURL = normalizeBackendURL(settings.BackendURL) + "/health"
+	}
 	dockerAvailable := isDockerAvailable()
-	if err := pingBackend("http://localhost:8080/health"); err != nil {
+	if err := pingBackend(healthURL); err != nil {
 		message := err.Error()
 		if !dockerAvailable {
 			message = "Backend no disponible en esta PC. Windows 7 no soporta Docker: el procesamiento corre en una PC con Windows 10/11 + Docker Desktop. Esta app abre la interfaz y guarda carpetas."
@@ -421,6 +429,7 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 	if settings.MaxRunBudgetUSD == 0 {
 		settings.MaxRunBudgetUSD = 300
 	}
+	settings.BackendURL = normalizeBackendURL(settings.BackendURL)
 	if settings.StoragePath == "" {
 		if projectRoot, err := appRootDir(); err == nil {
 			settings.StoragePath = filepath.Join(projectRoot, "data", "storage")
@@ -464,6 +473,12 @@ func workspaceSettingsPath() (string, error) {
 }
 
 func validateWorkspaceSettings(settings WorkspaceSettings) error {
+	if settings.BackendURL != "" {
+		parsedURL, err := url.ParseRequestURI(normalizeBackendURL(settings.BackendURL))
+		if err != nil || parsedURL.Host == "" {
+			return errors.New("backend URL must be a valid http or https address")
+		}
+	}
 	if settings.InputPath == "" {
 		return errors.New("input path is required")
 	}
@@ -502,6 +517,19 @@ func ensureWorkspaceDirectories(settings WorkspaceSettings) error {
 		return err
 	}
 	return os.MkdirAll(settings.StoragePath, 0o755)
+}
+
+func normalizeBackendURL(raw string) string {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return "http://localhost:8080"
+	}
+	raw = strings.TrimRight(raw, "/")
+	lower := strings.ToLower(raw)
+	if !strings.HasPrefix(lower, "http://") && !strings.HasPrefix(lower, "https://") {
+		return "https://" + raw
+	}
+	return raw
 }
 
 func openFile(path string) error {

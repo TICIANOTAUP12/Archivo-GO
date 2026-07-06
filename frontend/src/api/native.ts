@@ -1,4 +1,5 @@
 export type WorkspaceSettings = {
+  backendUrl: string;
   inputPath: string;
   storagePath: string;
   defaultProvider: 'google' | 'anthropic' | 'local';

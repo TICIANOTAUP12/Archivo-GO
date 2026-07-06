@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080';
+import { getBackendBaseUrl } from './backendConfig';
+
 const MAX_NETWORK_RETRIES = 4;
 const RETRY_DELAY_MS = 2000;
 
@@ -19,7 +20,7 @@ export async function request<TResponse>(path: string, init: RequestOptions = {}
     const timeoutId = window.setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(`${API_BASE_URL}${path}`, {
+      const response = await fetch(`${getBackendBaseUrl()}${path}`, {
         ...fetchInit,
         signal: controller.signal,
         headers: {
@@ -48,7 +49,7 @@ export async function request<TResponse>(path: string, init: RequestOptions = {}
     }
   }
 
-  throw lastError ?? new Error('No pudimos conectar con el backend local.');
+  throw lastError ?? new Error('No pudimos conectar con el backend.');
 }
 
 function isRetryableNetworkError(error: Error): boolean {
@@ -62,13 +63,13 @@ function buildNetworkError(error: unknown): Error {
   }
   if (error instanceof TypeError || (error instanceof Error && error.message.includes('fetch'))) {
     return new Error(
-      'Backend local no disponible. Abrí Docker Desktop y ejecutá: docker compose up -d en Archivo-GO.',
+      `No pudimos conectar con el backend en ${getBackendBaseUrl()}. Verificá la URL en IA o que Docker esté corriendo.`,
     );
   }
   if (error instanceof Error) {
     return error;
   }
-  return new Error('No pudimos conectar con el backend local.');
+  return new Error('No pudimos conectar con el backend.');
 }
 
 function sleep(ms: number): Promise<void> {

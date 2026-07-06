@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { setBackendBaseUrl } from '../api/backendConfig';
 import {
   getNativeServiceStatus,
   getWorkspaceSettings,
@@ -24,12 +25,14 @@ type UseWorkspaceSettingsResult = {
   setEnableAnthropicFallback: (isEnabled: boolean) => void;
   setMinExtractionConfidence: (confidence: number) => void;
   setMaxRunBudgetUsd: (budget: number) => void;
+  setBackendUrl: (url: string) => void;
   selectInputPath: () => Promise<void>;
   selectStoragePath: () => Promise<void>;
   persistSettings: () => Promise<void>;
 };
 
 const emptySettings: WorkspaceSettings = {
+  backendUrl: 'http://localhost:8080',
   inputPath: '',
   storagePath: '',
   defaultProvider: 'google',
@@ -98,6 +101,10 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettings((currentSettings) => ({ ...currentSettings, minExtractionConfidence: confidence }));
   }
 
+  function setBackendUrl(url: string): void {
+    setSettings((currentSettings) => ({ ...currentSettings, backendUrl: url }));
+  }
+
   function setMaxRunBudgetUsd(budget: number): void {
     setSettings((currentSettings) => ({ ...currentSettings, maxRunBudgetUsd: budget }));
   }
@@ -128,6 +135,7 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettingsMessage(null);
     try {
       await saveWorkspaceSettings(settings);
+      setBackendBaseUrl(settings.backendUrl);
       const serviceStatus = await getNativeServiceStatus();
       if (serviceStatus && serviceStatus.dockerAvailable === false) {
         setSettingsMessage('Carpetas guardadas correctamente.');
@@ -144,7 +152,10 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
   async function loadSettings(): Promise<void> {
     try {
       const loadedSettings = await getWorkspaceSettings();
-      if (loadedSettings) setSettings(loadedSettings);
+      if (loadedSettings) {
+        setSettings(loadedSettings);
+        setBackendBaseUrl(loadedSettings.backendUrl);
+      }
     } catch {
       setSettings(emptySettings);
     }
@@ -167,6 +178,7 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setEnableAnthropicFallback,
     setMinExtractionConfidence,
     setMaxRunBudgetUsd,
+    setBackendUrl,
     selectInputPath,
     selectStoragePath,
     persistSettings,

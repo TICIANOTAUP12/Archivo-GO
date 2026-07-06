@@ -8,6 +8,7 @@ export function SettingsPanel() {
     isSavingSettings,
     settingsMessage,
     settingsError,
+    setBackendUrl,
     setDefaultProvider,
     setGoogleApiKey,
     setGoogleModel,
@@ -54,6 +55,23 @@ export function SettingsPanel() {
         <span className={serviceStatus?.backendReady ? 'statusBadge' : 'statusBadge warning'}>
           {serviceStatus?.backendReady ? 'Backend conectado' : 'Backend sin confirmar'}
         </span>
+      </section>
+
+      <section className="card">
+        <h2>Servidor backend</h2>
+        <p className="muted">
+          URL del Docker remoto (dominio o IP). Ejemplo: <code>https://archivo.tudominio.com</code> o{' '}
+          <code>http://192.168.0.10:8080</code>. Dejá localhost si Docker corre en esta misma PC.
+        </p>
+        <label>
+          URL del backend
+          <input
+            value={settings.backendUrl}
+            onChange={(event) => setBackendUrl(event.target.value)}
+            placeholder="http://localhost:8080"
+            autoComplete="off"
+          />
+        </label>
       </section>
 
       <section className="card settingsGrid">

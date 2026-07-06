@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.9 — 2026-07-06
+
+URL de backend remoto configurable desde IA.
+
+### Cambios
+
+- Campo **URL del backend** en pantalla IA (`https://dominio.com` o IP LAN).
+- Todas las llamadas API usan esa URL (no solo localhost).
+- Health check y estado de servicios respetan la URL guardada.
+
 ## v0.1.8 — 2026-07-06
 
 UI fixes: carpetas solo en Carga, sidebar compacto, mensajes Win7 claros, repo público.

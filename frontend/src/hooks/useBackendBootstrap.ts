@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
+import { setBackendBaseUrl } from '../api/backendConfig';
 import { checkBackendHealth } from '../api/endpoints';
-import { getNativeServiceStatus, startNativeServices } from '../api/native';
+import { getNativeServiceStatus, getWorkspaceSettings, startNativeServices } from '../api/native';
 
 export type BackendBootstrapStatus = 'checking' | 'ready' | 'offline' | 'starting';
 
@@ -35,6 +36,11 @@ export function useBackendBootstrap(): UseBackendBootstrapResult {
   const ensureBackendReady = useCallback(async (): Promise<void> => {
     setBackendStatus('checking');
     setBackendMessage('Verificando servicios locales...');
+
+    const loadedSettings = await getWorkspaceSettings().catch(() => null);
+    if (loadedSettings?.backendUrl) {
+      setBackendBaseUrl(loadedSettings.backendUrl);
+    }
 
     if (await isBackendHealthy()) {
       setBackendStatus('ready');
