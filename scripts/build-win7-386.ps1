@@ -49,12 +49,21 @@ try {
         go1.20.14 get $package
     }
     go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
+    go1.20.14 mod edit -require=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
     go1.20.14 mod tidy
+    go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
+    go1.20.14 mod edit -require=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
 
-    $goModContents = Get-Content go.mod -Raw
-    if ($goModContents -match '5959a4027728') {
-        throw "Win7 go.mod still pins ledongthuc/pdf Go 1.24+; check module replace"
+    # Wails bindings invoke `go` from PATH; shim Go 1.20 so module resolution matches the build compiler.
+    $go120Exe = (Get-Command go1.20.14).Source
+    $shimDir = Join-Path $env:TEMP "archivo-go-win7-go-shim"
+    if (Test-Path $shimDir) {
+        Remove-Item $shimDir -Recurse -Force
     }
+    New-Item -ItemType Directory -Force -Path $shimDir | Out-Null
+    Copy-Item $go120Exe (Join-Path $shimDir "go.exe") -Force
+    $env:PATH = "$shimDir;$env:PATH"
+    Write-Host "Using Go shim: $(go version)"
 
     go1.20.14 install github.com/wailsapp/wails/v2/cmd/wails@v2.8.1
     $wails = Join-Path (go1.20.14 env GOPATH) "bin\wails.exe"
