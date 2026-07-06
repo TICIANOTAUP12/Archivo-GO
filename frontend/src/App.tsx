@@ -9,10 +9,21 @@ import { SmartSearchArea } from './components/search/SmartSearchArea';
 import { SettingsPanel } from './components/settings/SettingsPanel';
 import { useRecentDocuments } from './hooks/useRecentDocuments';
 import { useBackendBootstrap } from './hooks/useBackendBootstrap';
+import { useAppUpdate } from './hooks/useAppUpdate';
+import { UpdateBanner } from './components/settings/UpdateBanner';
 import './App.css';
 
 function App() {
   const { backendStatus, backendMessage, isBackendReady, retryBackend } = useBackendBootstrap();
+  const {
+    currentVersion,
+    updateInfo,
+    isCheckingUpdate,
+    isInstallingUpdate,
+    updateError,
+    refreshUpdateCheck,
+    installUpdate,
+  } = useAppUpdate();
   const [activeSection, setActiveSection] = useState<AppSection>('search');
   const { recentDocuments, isRefreshing, refreshError, refreshRecentDocuments } =
     useRecentDocuments(isBackendReady);
@@ -21,6 +32,15 @@ function App() {
     <div className="appFrame">
       <SidebarNavigation activeSection={activeSection} onSectionChange={setActiveSection} />
       <MainContainer>
+        <UpdateBanner
+          currentVersion={currentVersion}
+          updateInfo={updateInfo}
+          isCheckingUpdate={isCheckingUpdate}
+          isInstallingUpdate={isInstallingUpdate}
+          updateError={updateError}
+          onRefresh={refreshUpdateCheck}
+          onInstall={installUpdate}
+        />
         {backendStatus !== 'ready' ? (
           <section className="backendBanner" data-status={backendStatus}>
             <p>{backendMessage}</p>

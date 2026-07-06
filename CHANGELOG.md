@@ -1,5 +1,15 @@
 # Changelog
 
+## v0.1.7 — 2026-07-06
+
+Auto-actualización desde GitHub Releases.
+
+### Cambios
+
+- La app busca releases nuevos al abrir (banner Actualizaciones).
+- Botón **Actualizar a vX** descarga el zip correcto (Win7 / 386 / amd64), reemplaza archivos y reinicia.
+- Versión embebida en el build via `-ldflags`.
+
 ## v0.1.6 — 2026-07-06
 
 Botón principal **Procesar carpeta con IA** (auditoría + ingesta en un paso).

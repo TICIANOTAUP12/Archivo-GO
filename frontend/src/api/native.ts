@@ -19,8 +19,24 @@ export type ServiceStatus = {
   dockerAvailable: boolean;
 };
 
+export type AppInfo = {
+  version: string;
+  releaseChannel: string;
+};
+
+export type UpdateCheckResult = {
+  currentVersion: string;
+  latestVersion: string;
+  updateAvailable: boolean;
+  releaseNotes: string;
+  message: string;
+};
+
 type NativeAppBinding = {
+  CheckForUpdates?: () => Promise<UpdateCheckResult>;
+  GetAppInfo?: () => Promise<AppInfo>;
   GetWorkspaceSettings?: () => Promise<WorkspaceSettings>;
+  InstallLatestUpdate?: () => Promise<void>;
   OpenDocument?: (storagePath: string, sourcePath: string) => Promise<void>;
   OpenFile?: (sourcePath: string) => Promise<void>;
   OpenHelpManual?: () => Promise<void>;
@@ -70,6 +86,28 @@ export async function openNativeFile(sourcePath: string): Promise<void> {
   }
 
   await openFile(trimmedPath);
+}
+
+export async function getAppInfo(): Promise<AppInfo | null> {
+  const getInfo = window.go?.main?.App?.GetAppInfo;
+  if (!getInfo) return null;
+  return getInfo();
+}
+
+export async function checkForUpdates(): Promise<UpdateCheckResult> {
+  const checkUpdates = window.go?.main?.App?.CheckForUpdates;
+  if (!checkUpdates) {
+    throw new Error('Buscar actualizaciones requiere la app de escritorio Wails.');
+  }
+  return checkUpdates();
+}
+
+export async function installLatestUpdate(): Promise<void> {
+  const installUpdate = window.go?.main?.App?.InstallLatestUpdate;
+  if (!installUpdate) {
+    throw new Error('Instalar actualizaciones requiere la app de escritorio Wails.');
+  }
+  await installUpdate();
 }
 
 export async function openHelpManual(): Promise<void> {

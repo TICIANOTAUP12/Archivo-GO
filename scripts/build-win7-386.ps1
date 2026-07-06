@@ -42,12 +42,16 @@ try {
     npm run build
     Pop-Location
 
+    $version = if ($env:GITHUB_REF_NAME) { $env:GITHUB_REF_NAME -replace '^v', '' } else { "local" }
+    $ldflags = "-X main.appVersion=$version -X main.releaseChannel=windows-386-win7"
+
     & $wails build `
         -platform windows/386 `
         -clean `
         -compiler go1.20.14 `
         -webview2 error `
-        -tags native_webview2loader
+        -tags native_webview2loader `
+        -ldflags $ldflags
 
     $built = Join-Path $repoRoot "build\bin\ArchivoScivoliGNC.exe"
     if (-not (Test-Path $built)) {

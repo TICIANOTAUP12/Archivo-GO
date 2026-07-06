@@ -51,7 +51,10 @@ jobs:
 
       - name: Build application
         shell: pwsh
-        run: wails build -platform ${{ matrix.platform }} -clean -webview2 embed
+        run: |
+          $version = "${{ github.ref_name }}" -replace '^v', ''
+          $ldflags = "-X main.appVersion=$version -X main.releaseChannel=${{ matrix.artifact_suffix }}"
+          wails build -platform ${{ matrix.platform }} -clean -webview2 embed -ldflags $ldflags
 
       - name: Package artifacts
         shell: pwsh

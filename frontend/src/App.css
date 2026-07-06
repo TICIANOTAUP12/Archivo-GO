@@ -495,6 +495,34 @@ p {
   color: #9a6700;
 }
 
+.updateBanner {
+  align-items: center;
+  background: #fff;
+  border: 1px solid #d8e0ec;
+  border-radius: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 14px 16px;
+}
+
+.updateBanner[data-available='true'] {
+  background: linear-gradient(135deg, #fff 0%, var(--brand-yellow-soft) 100%);
+  border-color: rgba(245, 197, 24, 0.45);
+}
+
+.updateBanner p {
+  margin: 4px 0 0;
+}
+
+.updateActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .optionalAuditForm {
   border-top: 1px solid #e0e8f2;
   margin-top: 18px;
