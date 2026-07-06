@@ -29,6 +29,10 @@ try {
 
     go1.20.14 get github.com/wailsapp/wails/v2@v2.8.1
     go1.20.14 get github.com/wailsapp/go-webview2@v1.0.10
+    # Pin deps compatible with Go 1.20 (main go.mod pulls Go 1.24+ versions for localengine).
+    go1.20.14 get modernc.org/sqlite@v1.28.0
+    go1.20.14 get github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
+    go1.20.14 get golang.org/x/sys@v0.20.0
     go1.20.14 mod tidy
 
     go1.20.14 install github.com/wailsapp/wails/v2/cmd/wails@v2.8.1
