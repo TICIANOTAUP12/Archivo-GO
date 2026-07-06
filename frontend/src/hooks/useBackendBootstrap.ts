@@ -75,7 +75,7 @@ export function useBackendBootstrap(): UseBackendBootstrapResult {
     setBackendStatus('offline');
     if (nativeStatus?.dockerAvailable === false) {
       setBackendMessage(
-        'Windows 7 no puede ejecutar Docker localmente. Guardá la carpeta de origen igual; el backend debe correr en otra PC o llegar por túnel SSH a localhost:8080.',
+        'Backend no disponible en esta PC. Windows 7 no soporta Docker: procesá documentos desde una PC con Windows 10/11 y Docker Desktop. Acá podés configurar carpetas y buscar si el backend está conectado.',
       );
       return;
     }

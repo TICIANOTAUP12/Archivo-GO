@@ -40,15 +40,20 @@ Si ya tenés el `.exe` suelto:
 - Parche **KB4474419** (SHA-2) instalado en Windows 7.
 - **Docker no funciona** en Win7: el backend **no arranca en esta PC**. La interfaz sí abre; podés elegir y guardar la carpeta de origen sin error.
 
-## Backend en Windows 7
+## Backend en Windows 7 — confirmado
 
-Esta PC solo ejecuta la **interfaz**. Para auditar, ingestar y buscar documentos hace falta el backend FastAPI en otra máquina:
+**Sí: Windows 7 no puede correr Docker.** Docker Desktop exige Windows 10/11. El backend (FastAPI + PostgreSQL) va en Docker, así que **no procesa en la PC Win7**.
 
-1. En una PC con **Windows 10/11 + Docker Desktop**, levantá `docker compose up -d` en Archivo-GO.
-2. Desde la PC Win7, creá un **túnel SSH** que reenvíe el puerto 8080 de esa máquina a `localhost:8080` en Win7 (PuTTY/plink con `-L 8080:127.0.0.1:8080`).
-3. La app Win7 hablará con `http://localhost:8080` como si el backend fuera local.
+| Qué | Win7 | Win10/11 + Docker |
+|-----|------|-------------------|
+| Abrir la app | Sí | Sí |
+| Elegir carpetas (Carga) | Sí | Sí |
+| Auditar / procesar con IA | No (sin backend local) | Sí |
+| Buscar documentos | Solo si el backend responde en `localhost:8080` | Sí |
 
-Si no hay túnel ni backend remoto, verás "Backend offline" — es normal en Win7 sin Docker.
+**Arquitectura actual:** la PC Win7 del cliente es **solo interfaz**. El procesamiento pesado va en otra máquina con Docker (tu notebook, un servidor, etc.). El túnel SSH es **una opción** para conectar ambas; no es el único camino, pero hoy la app habla con `http://localhost:8080`.
+
+Si no hay backend conectado, verás "Backend offline" — es normal en Win7.
 
 ## Si sigue sin abrir
 

@@ -158,7 +158,7 @@ func (app *App) ServiceStatus() ServiceStatus {
 	if err := pingBackend("http://localhost:8080/health"); err != nil {
 		message := err.Error()
 		if !dockerAvailable {
-			message = "Backend offline: esta PC no tiene Docker (Windows 7). Guardá la carpeta igual; el backend debe correr en otra máquina o vía túnel SSH a localhost:8080."
+			message = "Backend no disponible en esta PC. Windows 7 no soporta Docker: el procesamiento corre en una PC con Windows 10/11 + Docker Desktop. Esta app abre la interfaz y guarda carpetas."
 		}
 		return ServiceStatus{BackendReady: false, Message: message, DockerAvailable: dockerAvailable}
 	}

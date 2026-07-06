@@ -17,7 +17,7 @@ const navigationItems: NavigationItem[] = [
   { section: 'search', label: 'Buscador', description: 'Encontrar casos' },
   { section: 'ingest', label: 'Carga', description: 'Procesar carpeta con IA' },
   { section: 'documents', label: 'Documentos', description: 'Biblioteca y estados' },
-  { section: 'settings', label: 'Configuración', description: 'Carpetas, IA y servicios' },
+  { section: 'settings', label: 'IA', description: 'Keys y servicios' },
 ];
 
 export function SidebarNavigation({ activeSection, onSectionChange }: SidebarNavigationProps) {

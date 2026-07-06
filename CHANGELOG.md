@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.8 — 2026-07-06
+
+UI fixes: carpetas solo en Carga, sidebar compacto, mensajes Win7 claros, repo público.
+
+### Cambios
+
+- Carpetas origen/destino **solo en Carga** (sacadas de IA/Configuración).
+- Sidebar: ítems compactos, label **IA** en lugar de Configuración estirado.
+- Mensajes Win7/Docker aclarados (sin Docker local; procesamiento en Win10/11).
+- Repo GitHub **público** → auto-update funciona sin login.
+
 ## v0.1.7 — 2026-07-06
 
 Auto-actualización desde GitHub Releases.

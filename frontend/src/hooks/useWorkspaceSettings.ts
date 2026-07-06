@@ -130,9 +130,7 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
       await saveWorkspaceSettings(settings);
       const serviceStatus = await getNativeServiceStatus();
       if (serviceStatus && serviceStatus.dockerAvailable === false) {
-        setSettingsMessage(
-          'Carpetas guardadas correctamente. En Windows 7 el backend no corre en esta PC; debe estar en otra máquina con Docker o llegar por túnel SSH a localhost:8080.',
-        );
+        setSettingsMessage('Carpetas guardadas correctamente.');
         return;
       }
       setSettingsMessage('Carpetas y configuración guardadas. Los servicios fueron reiniciados cuando Docker está disponible.');

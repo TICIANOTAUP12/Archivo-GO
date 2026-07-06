@@ -137,7 +137,7 @@ export function IngestionPanel({ isBackendReady, onIngestComplete }: IngestionPa
         </button>
         {!isBackendReady ? (
           <p className="inlineHint warningHint">
-            Conectá el backend antes de procesar. En Windows 7 puede requerir túnel SSH a localhost:8080.
+            Para procesar hace falta el backend con Docker (Windows 10/11). En Windows 7 esta PC solo corre la interfaz.
           </p>
         ) : null}
         {!canConfigure ? (

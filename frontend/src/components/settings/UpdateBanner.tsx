@@ -39,7 +39,7 @@ export function UpdateBanner({
           {isCheckingUpdate ? 'Buscando...' : 'Buscar'}
         </button>
         {updateInfo?.updateAvailable ? (
-          <button type="button" className="primaryActionButton compactButton" disabled={isInstallingUpdate} onClick={() => void onInstall()}>
+          <button type="button" className="updateInstallButton compactButton" disabled={isInstallingUpdate} onClick={() => void onInstall()}>
             {isInstallingUpdate ? 'Descargando...' : `Actualizar a v${updateInfo.latestVersion}`}
           </button>
         ) : null}

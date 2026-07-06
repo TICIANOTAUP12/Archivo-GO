@@ -100,11 +100,12 @@ p {
   background: var(--brand-black);
   border-right: 1px solid rgba(245, 197, 24, 0.22);
   box-shadow: 12px 0 40px rgba(0, 0, 0, 0.18);
-  display: grid;
-  grid-template-rows: auto 1fr auto;
+  display: flex;
+  flex-direction: column;
   min-height: 100vh;
   min-width: 0;
   padding: 24px;
+  width: 280px;
 }
 
 .sidebarBrand {
@@ -141,13 +142,16 @@ p {
   width: 46px;
 }
 
-.sidebarNav,
-.panelStack {
-  display: grid;
-  gap: 10px;
+.sidebarNav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .panelStack {
+  display: grid;
   gap: 20px;
 }
 
@@ -155,16 +159,27 @@ p {
   background: transparent;
   border: 1px solid transparent;
   color: rgba(255, 255, 255, 0.88);
-  display: grid;
-  gap: 4px;
-  justify-items: start;
-  padding: 14px;
+  display: block;
+  flex: 0 0 auto;
+  padding: 12px 14px;
   text-align: left;
+  width: 100%;
+}
+
+.navItem span {
+  display: block;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
 .navItem small {
   color: rgba(255, 255, 255, 0.58);
+  display: block;
+  font-size: 0.78rem;
   font-weight: 500;
+  line-height: 1.35;
+  margin-top: 2px;
 }
 
 .navItem.active {
@@ -517,6 +532,11 @@ p {
   margin: 4px 0 0;
 }
 
+.updateInstallButton {
+  font-weight: 700;
+  padding: 10px 14px;
+}
+
 .updateActions {
   display: flex;
   flex-wrap: wrap;
@@ -530,9 +550,9 @@ p {
 }
 
 .sidebarFooter {
-  margin-top: 18px;
-  padding-top: 16px;
   border-top: 1px solid rgba(245, 197, 24, 0.18);
+  margin-top: auto;
+  padding-top: 16px;
 }
 
 .helpNavItem {
@@ -1100,9 +1120,14 @@ mark {
   .sidebar {
     border-bottom: 1px solid #d8e2ee;
     border-right: 0;
+    min-height: auto;
+    width: auto;
   }
 
   .sidebarNav {
+    display: grid;
+    flex: none;
+    gap: 8px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
