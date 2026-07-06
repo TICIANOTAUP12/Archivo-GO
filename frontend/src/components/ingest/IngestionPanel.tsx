@@ -1,12 +1,20 @@
 import { useState, type FormEvent } from 'react';
 import { useIngest } from '../../hooks/useIngest';
 import { useWorkspaceSettings } from '../../hooks/useWorkspaceSettings';
+import { FolderPathPicker } from '../settings/FolderPathPicker';
 import { AuditSummary } from './AuditSummary';
 import { ProgressUpload } from './ProgressUpload';
 
 type IngestionPanelProps = {
   onIngestComplete: () => Promise<void>;
 };
+
+const processSteps = [
+  'Tocá Examinar... y elegí la carpeta con PDFs e imágenes.',
+  'Guardá la carpeta de origen para que la app la recuerde.',
+  'Auditá costo para ver archivos, páginas y gasto estimado.',
+  'Si el costo cierra, ingestá para indexar y poder buscar.',
+];
 
 export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
   const [sampleLimit, setSampleLimit] = useState<number>(500);
@@ -18,11 +26,14 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
     settingsMessage,
     settingsError,
     setInputPath,
+    setStoragePath,
     selectInputPath,
+    selectStoragePath,
     persistSettings,
   } = useWorkspaceSettings();
   const hasSourcePath = settings.inputPath.trim().length > 0;
-  const canRun = hasSourcePath && !isSavingSettings;
+  const hasStoragePath = settings.storagePath.trim().length > 0;
+  const canRun = hasSourcePath && hasStoragePath && !isSavingSettings;
 
   function handleAudit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -38,36 +49,52 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
         </div>
       </div>
 
+      <section className="processGuide">
+        <h3>Pasos del proceso</h3>
+        <ol>
+          {processSteps.map((step) => (
+            <li key={step}>{step}</li>
+          ))}
+        </ol>
+      </section>
+
       {error ? <section className="inlineError strong">{error}</section> : null}
       {settingsError ? <section className="inlineError strong">{settingsError}</section> : null}
       {settingsMessage ? <p className="successMessage">{settingsMessage}</p> : null}
 
       <form onSubmit={handleAudit}>
-        <label>
-          Carpeta de documentos en esta PC
-          <div className="pathPicker">
-            <input
-              value={settings.inputPath}
-              onChange={(event) => setInputPath(event.target.value)}
-              placeholder="Seleccioná la carpeta de PDFs e imágenes"
-              required
-            />
-            <button type="button" className="secondary compactButton" onClick={() => void selectInputPath()}>
-              Seleccionar
-            </button>
-          </div>
-        </label>
+        <div className="pathPickerGrid">
+          <FolderPathPicker
+            label="Carpeta de origen (documentos a procesar)"
+            hint="PDFs e imágenes que querés auditar e ingestar."
+            value={settings.inputPath}
+            placeholder="Ej. C:\ARCHIVOS_GO\ENARGAS"
+            disabled={isSavingSettings}
+            onChange={setInputPath}
+            onBrowse={() => void selectInputPath()}
+          />
+          <FolderPathPicker
+            label="Carpeta de destino (copias organizadas)"
+            hint="Donde se guardan los casos procesados en esta PC."
+            value={settings.storagePath}
+            placeholder="Ej. C:\ARCHIVOS_GO\storage"
+            disabled={isSavingSettings}
+            onChange={setStoragePath}
+            onBrowse={() => void selectStoragePath()}
+          />
+        </div>
 
         <button
           type="button"
           className="secondary"
-          disabled={!hasSourcePath || isSavingSettings}
+          disabled={!hasSourcePath || !hasStoragePath || isSavingSettings}
           onClick={() => void persistSettings()}
         >
-          {isSavingSettings ? 'Guardando carpeta...' : 'Guardar carpeta de origen'}
+          {isSavingSettings ? 'Guardando carpetas...' : 'Guardar carpetas'}
         </button>
+
         <label>
-          Muestra
+          Muestra para estimar costo
           <input
             type="number"
             min={1}

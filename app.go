@@ -128,6 +128,24 @@ func (app *App) SaveWorkspaceSettings(settings WorkspaceSettings) error {
 	return app.StartServices()
 }
 
+func (app *App) OpenHelpManual() error {
+	root, err := appRootDir()
+	if err != nil {
+		return err
+	}
+
+	candidates := []string{
+		filepath.Join(root, "manual-de-uso.html"),
+		filepath.Join(root, "docs", "manual-de-uso.html"),
+	}
+	for _, candidate := range candidates {
+		if fileExists(candidate) {
+			return openFile(candidate)
+		}
+	}
+	return errors.New("no se encontró manual-de-uso.html junto a la aplicación")
+}
+
 func (app *App) SelectDirectory(title string) (string, error) {
 	if app.ctx == nil {
 		return "", errors.New("desktop context is not ready")

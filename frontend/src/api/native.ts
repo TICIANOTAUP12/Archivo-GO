@@ -1,13 +1,3 @@
-type NativeAppBinding = {
-  GetWorkspaceSettings?: () => Promise<WorkspaceSettings>;
-  OpenDocument?: (storagePath: string, sourcePath: string) => Promise<void>;
-  OpenFile?: (sourcePath: string) => Promise<void>;
-  SaveWorkspaceSettings?: (settings: WorkspaceSettings) => Promise<void>;
-  SelectDirectory?: (title: string) => Promise<string>;
-  ServiceStatus?: () => Promise<ServiceStatus>;
-  StartServices?: () => Promise<void>;
-};
-
 export type WorkspaceSettings = {
   inputPath: string;
   storagePath: string;
@@ -27,6 +17,17 @@ export type ServiceStatus = {
   backendReady: boolean;
   message: string;
   dockerAvailable: boolean;
+};
+
+type NativeAppBinding = {
+  GetWorkspaceSettings?: () => Promise<WorkspaceSettings>;
+  OpenDocument?: (storagePath: string, sourcePath: string) => Promise<void>;
+  OpenFile?: (sourcePath: string) => Promise<void>;
+  OpenHelpManual?: () => Promise<void>;
+  SaveWorkspaceSettings?: (settings: WorkspaceSettings) => Promise<void>;
+  SelectDirectory?: (title: string) => Promise<string>;
+  ServiceStatus?: () => Promise<ServiceStatus>;
+  StartServices?: () => Promise<void>;
 };
 
 const desktopBridgeUnavailableMessage =
@@ -69,6 +70,14 @@ export async function openNativeFile(sourcePath: string): Promise<void> {
   }
 
   await openFile(trimmedPath);
+}
+
+export async function openHelpManual(): Promise<void> {
+  const openManual = window.go?.main?.App?.OpenHelpManual;
+  if (!openManual) {
+    throw new Error('El manual está en manual-de-uso.html junto al ejecutable de la app.');
+  }
+  await openManual();
 }
 
 export async function getWorkspaceSettings(): Promise<WorkspaceSettings | null> {

@@ -1,3 +1,5 @@
+import { openHelpManual } from '../../api/native';
+
 export type AppSection = 'search' | 'ingest' | 'documents' | 'settings';
 
 type SidebarNavigationProps = {
@@ -13,12 +15,21 @@ type NavigationItem = {
 
 const navigationItems: NavigationItem[] = [
   { section: 'search', label: 'Buscador', description: 'Encontrar casos' },
-  { section: 'ingest', label: 'Carga', description: 'Auditar e ingestar' },
+  { section: 'ingest', label: 'Carga', description: 'Carpetas, auditoría e ingesta' },
   { section: 'documents', label: 'Documentos', description: 'Biblioteca y estados' },
-  { section: 'settings', label: 'IA', description: 'Modelos y keys' },
+  { section: 'settings', label: 'Configuración', description: 'Carpetas, IA y servicios' },
 ];
 
 export function SidebarNavigation({ activeSection, onSectionChange }: SidebarNavigationProps) {
+  async function handleOpenManual(): Promise<void> {
+    try {
+      await openHelpManual();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'No pudimos abrir el manual.';
+      window.alert(message);
+    }
+  }
+
   return (
     <aside className="sidebar">
       <div className="sidebarBrand">
@@ -42,6 +53,13 @@ export function SidebarNavigation({ activeSection, onSectionChange }: SidebarNav
           </button>
         ))}
       </nav>
+
+      <div className="sidebarFooter">
+        <button type="button" className="navItem helpNavItem" onClick={() => void handleOpenManual()}>
+          <span>Manual de uso</span>
+          <small>Guía paso a paso del proceso</small>
+        </button>
+      </div>
     </aside>
   );
 }

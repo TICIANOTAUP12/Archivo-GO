@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.5 — 2026-07-06
+
+Manual de uso, botón Examinar y carpetas en Configuración.
+
+### Cambios
+
+- Botón **Examinar...** para carpeta de origen y destino (Carga y Configuración).
+- Menú lateral: sección **Configuración**, pie con **Manual de uso**.
+- Guía paso a paso visible en pantalla Carga.
+- `manual-de-uso.html` actualizado (Win7, v0.1.4+, flujo completo).
+- El zip Win7 incluye el manual junto al `.exe`.
+
 ## v0.1.4 — 2026-07-05
 
 Fix guardar carpeta de origen en Windows 7 sin Docker.

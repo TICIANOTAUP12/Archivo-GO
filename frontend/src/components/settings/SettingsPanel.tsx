@@ -1,6 +1,7 @@
 import { useServiceStatus } from '../../hooks/useServiceStatus';
 import { useWorkspaceSettings } from '../../hooks/useWorkspaceSettings';
 import type { WorkspaceSettings } from '../../api/native';
+import { FolderPathPicker } from './FolderPathPicker';
 
 export function SettingsPanel() {
   const {
@@ -8,6 +9,10 @@ export function SettingsPanel() {
     isSavingSettings,
     settingsMessage,
     settingsError,
+    setInputPath,
+    setStoragePath,
+    selectInputPath,
+    selectStoragePath,
     setDefaultProvider,
     setGoogleApiKey,
     setGoogleModel,
@@ -26,9 +31,9 @@ export function SettingsPanel() {
     <section className="panelStack">
       <div className="sectionHero">
         <p className="eyebrow">Configuración</p>
-        <h1>Configuración de IA</h1>
+        <h1>Configuración de carpetas e IA</h1>
         <p className="heroText">
-          Definí las keys y modelos que auditan el texto extraído de PDFs e imágenes.
+          Elegí dónde están los documentos, dónde guardar las copias procesadas y configurá las keys de IA.
         </p>
       </div>
 
@@ -56,11 +61,39 @@ export function SettingsPanel() {
         </span>
       </section>
 
+      <section className="card">
+        <h2>Carpetas en esta PC</h2>
+        <p className="muted">
+          Usá <strong>Examinar...</strong> para elegir cada carpeta con el explorador de Windows.
+          Después tocá Guardar carpetas.
+        </p>
+        <div className="pathPickerGrid">
+          <FolderPathPicker
+            label="Carpeta de origen"
+            hint="De acá se leen los PDFs e imágenes para auditar e ingestar."
+            value={settings.inputPath}
+            placeholder="Seleccioná la carpeta de documentos"
+            disabled={isSavingSettings}
+            onChange={setInputPath}
+            onBrowse={() => void selectInputPath()}
+          />
+          <FolderPathPicker
+            label="Carpeta de destino"
+            hint="Acá se guardan las copias organizadas de los casos procesados."
+            value={settings.storagePath}
+            placeholder="Seleccioná dónde guardar los casos"
+            disabled={isSavingSettings}
+            onChange={setStoragePath}
+            onBrowse={() => void selectStoragePath()}
+          />
+        </div>
+      </section>
+
       <section className="card settingsGrid">
         <div>
           <h2>Modelos y keys</h2>
           <p className="muted">
-            Estos valores se guardan localmente y se pasan al backend cuando Wails reinicia los servicios.
+            Estos valores se guardan localmente y se pasan al backend cuando hay Docker disponible.
           </p>
         </div>
 
@@ -162,12 +195,8 @@ export function SettingsPanel() {
 
       {settingsError ? <section className="inlineError strong">{settingsError}</section> : null}
       {settingsMessage ? <section className="successMessage">{settingsMessage}</section> : null}
-      <button
-        type="button"
-        disabled={isSavingSettings}
-        onClick={() => void persistSettings()}
-      >
-        {isSavingSettings ? 'Guardando configuración...' : 'Guardar IA y reiniciar servicios'}
+      <button type="button" disabled={isSavingSettings} onClick={() => void persistSettings()}>
+        {isSavingSettings ? 'Guardando configuración...' : 'Guardar carpetas e IA'}
       </button>
     </section>
   );

@@ -1,0 +1,858 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manual de uso — Archivo SCIVOLI GNC</title>
+  <style>
+    :root {
+      --black: #111111;
+      --yellow: #f5c518;
+      --yellow-soft: #fff8e1;
+      --yellow-bg: #fff4c7;
+      --text: #152033;
+      --muted: #5a6478;
+      --border: #d8e0ec;
+      --ok: #1f7a3f;
+      --warn: #9a6700;
+      --error: #b42318;
+      --radius: 14px;
+      --shadow: 0 10px 30px rgba(17, 17, 17, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      line-height: 1.6;
+      background:
+        radial-gradient(circle at top, rgba(245, 197, 24, 0.14), transparent 34rem),
+        #f7f4eb;
+    }
+
+    a { color: #0f4c81; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      align-self: start;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 28px 20px;
+      background: var(--black);
+      color: #f5f7fb;
+    }
+
+    .brand {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .brandMark {
+      display: grid;
+      place-items: center;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--yellow);
+      color: var(--black);
+      font-weight: 800;
+    }
+
+    .brand strong { display: block; font-size: 0.95rem; }
+    .brand span { color: #c9d2e3; font-size: 0.85rem; }
+
+    .sidebar nav a {
+      display: block;
+      padding: 10px 12px;
+      margin-bottom: 6px;
+      border-radius: 10px;
+      color: #e8edf7;
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+
+    .sidebar nav a:hover,
+    .sidebar nav a.active {
+      background: rgba(245, 197, 24, 0.16);
+      color: var(--yellow);
+    }
+
+    .content {
+      max-width: 920px;
+      padding: 40px 32px 80px;
+    }
+
+    .hero {
+      padding: 28px;
+      border-radius: var(--radius);
+      background: linear-gradient(135deg, #fff 0%, var(--yellow-soft) 100%);
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--warn);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: clamp(1.8rem, 4vw, 2.4rem);
+      line-height: 1.15;
+    }
+
+    h2 {
+      margin: 40px 0 12px;
+      font-size: 1.45rem;
+    }
+
+    h3 {
+      margin: 24px 0 8px;
+      font-size: 1.05rem;
+    }
+
+    p, li { color: var(--text); }
+
+    .muted { color: var(--muted); }
+
+    .card {
+      padding: 22px;
+      margin: 18px 0;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: var(--yellow-bg);
+      color: var(--black);
+      font-size: 0.82rem;
+      font-weight: 700;
+    }
+
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .steps li {
+      position: relative;
+      padding: 16px 16px 16px 56px;
+      margin-bottom: 12px;
+      border-radius: var(--radius);
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .steps li::before {
+      counter-increment: step;
+      content: counter(step);
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--black);
+      color: var(--yellow);
+      font-weight: 800;
+      font-size: 0.85rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--yellow-soft);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    code, .kbd {
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: #eef2f8;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.9em;
+    }
+
+    .kbd {
+      border: 1px solid var(--border);
+    }
+
+    .callout {
+      padding: 16px 18px;
+      border-left: 4px solid var(--yellow);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      background: var(--yellow-soft);
+      margin: 18px 0;
+    }
+
+    .callout.warn { border-color: var(--warn); background: #fff7e6; }
+    .callout.ok { border-color: var(--ok); background: #eefbf3; }
+    .callout.error { border-color: var(--error); background: #fff1f0; }
+
+    .section-map {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .section-map article {
+      padding: 16px;
+      border-radius: var(--radius);
+      background: #fff;
+      border: 1px solid var(--border);
+    }
+
+    .section-map strong { display: block; margin-bottom: 6px; }
+
+    .faq details {
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: #fff;
+    }
+
+    .faq summary {
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    footer {
+      margin-top: 48px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+      }
+      .content { padding: 24px 18px 60px; }
+    }
+
+    @media print {
+      body { background: #fff; }
+      .sidebar { display: none; }
+      .layout { display: block; }
+      .card, .steps li { box-shadow: none; break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brandMark">SG</div>
+        <div>
+          <strong>Archivo de</strong>
+          <span>SCIVOLI GNC</span>
+        </div>
+      </div>
+      <nav aria-label="Índice del manual">
+        <a href="#inicio">Inicio</a>
+        <a href="#que-es">Qué es y para qué sirve</a>
+        <a href="#requisitos">Requisitos</a>
+        <a href="#instalacion">Instalación</a>
+        <a href="#pantallas">Las 4 pantallas</a>
+        <a href="#buscador">Buscador</a>
+        <a href="#win7">Windows 7 (32 bits)</a>
+        <a href="#carpetas">Carpetas — Examinar</a>
+        <a href="#carga">Carga e ingesta</a>
+        <a href="#documentos">Biblioteca</a>
+        <a href="#ia">Configuración IA</a>
+        <a href="#flujo">Flujo recomendado</a>
+        <a href="#problemas">Problemas frecuentes</a>
+        <a href="#faq">Preguntas frecuentes</a>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <header class="hero" id="inicio">
+        <p class="eyebrow">Manual de uso</p>
+        <h1>Archivo SCIVOLI GNC</h1>
+        <p class="muted">
+          Guía práctica para buscar trámites, patentes y matrículas en documentos de la agencia
+          sin recorrer carpetas a mano. Pensada para el equipo de SCIVOLI GNC.
+        </p>
+        <p><span class="pill">Versión del manual: 1.1</span> · <span class="pill">Julio 2026</span> · <span class="pill">App v0.1.4+</span></p>
+      </header>
+
+      <section id="que-es">
+        <h2>Qué es y qué podés hacer</h2>
+        <p>
+          <strong>Archivo SCIVOLI GNC</strong> es una aplicación de escritorio que organiza PDFs e imágenes
+          de trámites ENARGAS, operaciones GNV, patentes, matrículas y documentación relacionada.
+          El sistema lee los archivos, extrae datos con inteligencia artificial y los deja
+          <strong>buscables en segundos</strong>.
+        </p>
+
+        <div class="grid-2">
+          <div class="card">
+            <h3>Podés hacer esto</h3>
+            <ul>
+              <li>Buscar por <strong>patente</strong> (ej. <code>XLF030</code>, Mercosur)</li>
+              <li>Buscar por <strong>número de trámite</strong> (8–9 dígitos)</li>
+              <li>Buscar por <strong>matrícula METROGAS</strong> (4–6 dígitos)</li>
+              <li>Buscar por <strong>persona o empresa</strong> (nombre o texto libre)</li>
+              <li>Auditar una carpeta <strong>antes</strong> de gastar en procesamiento</li>
+              <li>Ingestar documentos con OCR + extracción + indexación</li>
+              <li>Ver el estado de cada archivo y abrirlo con un clic</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>No hace falta que sepas</h3>
+            <ul>
+              <li>Programar ni usar la terminal (salvo soporte técnico)</li>
+              <li>Recordar en qué subcarpeta quedó un trámite</li>
+              <li>Abrir PDF por PDF para encontrar una patente</li>
+              <li>Configurar Docker a mano: la app lo gestiona sola</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="requisitos">
+        <h2>Requisitos en la PC</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Para qué</th>
+              <th>Notas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Windows 7 (32 bits, X86)</td>
+              <td>Solo interfaz de la app</td>
+              <td>Descargar <code>*-windows-386-win7.zip</code> con carpeta <code>webview2/</code></td>
+            </tr>
+            <tr>
+              <td>Windows 10 u 11 (64 bits)</td>
+              <td>Ejecutar la app</td>
+              <td>Descargar el <code>.exe</code> amd64 desde GitHub Releases</td>
+            </tr>
+            <tr>
+              <td>Docker Desktop</td>
+              <td>Base de datos y procesamiento</td>
+              <td>Obligatorio en Win10/11. <strong>No funciona en Windows 7.</strong></td>
+            </tr>
+            <tr>
+              <td>WebView2 Runtime</td>
+              <td>Interfaz de la app</td>
+              <td>En Windows 11 suele venir instalado</td>
+            </tr>
+            <tr>
+              <td>Google API Key (Gemini)</td>
+              <td>OCR, extracción e indexación</td>
+              <td>Se configura en la pantalla <strong>IA</strong></td>
+            </tr>
+            <tr>
+              <td>Anthropic API Key (opcional)</td>
+              <td>Segunda revisión si hay baja confianza</td>
+              <td>Solo si activás el fallback</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="instalacion">
+        <h2>Instalación y primer arranque</h2>
+        <ol class="steps">
+          <li>
+            <strong>Descargá el ejecutable</strong> desde
+            <a href="https://github.com/TICIANOTAUP12/Archivo-GO/releases" target="_blank" rel="noopener">GitHub Releases</a>.
+            Elegí <code>ArchivoScivoliGNC-*-windows-amd64.exe</code> en PCs de 64 bits.
+          </li>
+          <li>
+            <strong>Instalá Docker Desktop</strong> si aún no lo tenés. Abrilo y esperá a que diga que Docker está corriendo.
+          </li>
+          <li>
+            <strong>Abrí Archivo SCIVOLI GNC</strong>. La primera vez puede tardar unos minutos mientras levanta servicios internos.
+          </li>
+          <li>
+            Si aparece un banner amarillo o rojo arriba, tocá <span class="kbd">Reintentar conexión</span>.
+            Cuando el backend responde, desaparece y podés usar todas las funciones.
+          </li>
+          <li>
+            Andá a <strong>IA</strong> en el menú lateral, pegá tu <strong>Google API Key</strong> y guardá.
+            La app reinicia los servicios con esa configuración.
+          </li>
+        </ol>
+
+        <div class="callout ok">
+          <strong>Tip:</strong> cada PC puede tener su propia carpeta de documentos de origen.
+          No hace falta copiar todo el archivo a una ruta fija del servidor.
+        </div>
+      </section>
+
+      <section id="pantallas">
+        <h2>Las 4 pantallas de la app</h2>
+        <p>El menú lateral izquierdo tiene cuatro secciones y un acceso al manual. Mapa rápido:</p>
+        <div class="section-map">
+          <article>
+            <strong>1. Buscador</strong>
+            <span class="muted">Pantalla principal. Encontrá casos ya indexados.</span>
+          </article>
+          <article>
+            <strong>2. Carga</strong>
+            <span class="muted">Examinar carpetas, auditar costo e ingestar documentos nuevos.</span>
+          </article>
+          <article>
+            <strong>3. Documentos</strong>
+            <span class="muted">Biblioteca completa con filtros por estado.</span>
+          </article>
+          <article>
+            <strong>4. Configuración</strong>
+            <span class="muted">Carpetas, keys de IA, modelos y estado del backend.</span>
+          </article>
+          <article>
+            <strong>Manual de uso</strong>
+            <span class="muted">Botón al pie del menú lateral. Abre esta guía en el navegador.</span>
+          </article>
+        </div>
+      </section>
+
+      <section id="win7">
+        <h2>Windows 7 de 32 bits — instalación especial</h2>
+        <p>
+          La PC Ecopos y otras máquinas legacy solo ejecutan la <strong>interfaz</strong>.
+          El procesamiento (Docker + base de datos) debe estar en otra PC o llegar por túnel.
+        </p>
+        <ol class="steps">
+          <li>
+            Descargá <code>ArchivoScivoliGNC-*-windows-386-win7.zip</code> desde
+            <a href="https://github.com/TICIANOTAUP12/Archivo-GO/releases" target="_blank" rel="noopener">Releases</a>.
+          </li>
+          <li>
+            Descomprimí <strong>toda</strong> la carpeta. Debe quedar el <code>.exe</code> y la carpeta <code>webview2/</code> al lado.
+          </li>
+          <li>
+            Ejecutá el <code>.exe</code> desde esa carpeta (no mover solo el ejecutable).
+          </li>
+          <li>
+            Si ves “Backend offline”, es <strong>normal</strong> en Win7 sin Docker. Podés guardar carpetas igual.
+          </li>
+          <li>
+            Para auditar/ingestar/buscar: conectá un backend remoto en <code>localhost:8080</code> vía túnel SSH
+            o usá otra PC con Docker en la misma red.
+          </li>
+        </ol>
+        <div class="callout warn">
+          <strong>No uses</strong> el instalador WebView2 moderno de Microsoft en Windows 7.
+          Usá el runtime 109 x86 que viene en el zip Win7.
+        </div>
+      </section>
+
+      <section id="carpetas">
+        <h2>Carpetas — botón Examinar...</h2>
+        <p>
+          Para elegir carpetas <strong>no escribas la ruta a mano</strong> si podés evitarlo.
+          Usá el botón <span class="kbd">Examinar...</span> (explorador de Windows).
+        </p>
+        <ol class="steps">
+          <li>
+            Andá a <strong>Carga</strong> o <strong>Configuración</strong> en el menú lateral.
+          </li>
+          <li>
+            Junto a <strong>Carpeta de origen</strong>, tocá <span class="kbd">Examinar...</span>
+            y elegí la carpeta con PDFs e imágenes (ej. ENARGAS, GNV).
+          </li>
+          <li>
+            Junto a <strong>Carpeta de destino</strong>, tocá <span class="kbd">Examinar...</span>
+            y elegí dónde guardar las copias procesadas.
+          </li>
+          <li>
+            Tocá <span class="kbd">Guardar carpetas</span>. La app recuerda ambas rutas en esta PC.
+          </li>
+        </ol>
+        <div class="callout ok">
+          <strong>Origen y destino deben ser carpetas distintas.</strong> Si elegís la misma para ambas, la app avisa con error.
+        </div>
+      </section>
+
+      <section id="buscador">
+        <h2>Buscador — encontrar un caso en segundos</h2>
+        <p>
+          Escribí en la barra de búsqueda. La app detecta automáticamente qué tipo de dato estás buscando
+          y te muestra resultados con fragmento del texto, página y botón para abrir el archivo.
+        </p>
+
+        <div class="card">
+          <h3>Qué podés escribir</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tipo</th>
+                <th>Ejemplo</th>
+                <th>Formato</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Patente</td>
+                <td><code>XLF030</code></td>
+                <td>3 letras + 3 números, o formato Mercosur</td>
+              </tr>
+              <tr>
+                <td>Trámite</td>
+                <td><code>73919692</code></td>
+                <td>8 o 9 dígitos</td>
+              </tr>
+              <tr>
+                <td>Expediente</td>
+                <td><code>EX-2024-12345678-APN</code></td>
+                <td>Formato EX-…</td>
+              </tr>
+              <tr>
+                <td>Matrícula</td>
+                <td><code>18032</code></td>
+                <td>4 a 6 dígitos</td>
+              </tr>
+              <tr>
+                <td>Persona / empresa</td>
+                <td><code>Luis Rensin</code>, <code>SCIVOLI</code></td>
+                <td>Nombre o texto libre</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Cómo leer un resultado</h3>
+        <ul>
+          <li><strong>Título:</strong> patente, trámite o matrícula detectada.</li>
+          <li><strong>Archivo:</strong> nombre del PDF o imagen donde aparece.</li>
+          <li><strong>Páginas:</strong> en qué hoja(s) está la coincidencia.</li>
+          <li><strong>Vista previa:</strong> extracto del texto con la palabra resaltada.</li>
+          <li><strong>Abrir:</strong> abre la copia guardada por el sistema (no depende de la carpeta original).</li>
+        </ul>
+
+        <div class="callout">
+          La búsqueda se dispara sola mientras escribís (con una pausa breve).
+          También podés apretar <span class="kbd">Enter</span> para forzar la búsqueda.
+        </div>
+      </section>
+
+      <section id="carga">
+        <h2>Carga — auditar e ingestar documentos</h2>
+        <p>
+          Usá esta pantalla cuando querés <strong>incorporar documentos nuevos</strong> al archivo digital.
+          Siempre conviene auditar primero para ver cuántos archivos hay y cuánto costaría procesarlos.
+        </p>
+
+        <ol class="steps">
+          <li>
+            Andá a <strong>Carga</strong> en el menú lateral.
+          </li>
+          <li>
+            <strong>Carpeta de origen:</strong> <span class="kbd">Examinar...</span> → elegí PDFs e imágenes.
+            <strong>Carpeta de destino:</strong> <span class="kbd">Examinar...</span> → elegí dónde guardar copias.
+          </li>
+          <li>
+            <strong>Guardá las carpetas</strong> con <span class="kbd">Guardar carpetas</span>.
+          </li>
+          <li>
+            <strong>Definí la muestra</strong> (por defecto 500). Sirve para estimar costos sin escanear todo el disco.
+          </li>
+          <li>
+            Tocá <span class="kbd">Auditar costo</span>. Verás:
+            cantidad de archivos, páginas, cuántas necesitan OCR y rango de costo en USD.
+          </li>
+          <li>
+            Si el costo te cierra, tocá <span class="kbd">Ingestar documentos</span>.
+            El pipeline hace OCR, extrae datos con IA, genera embeddings y deja todo indexado.
+          </li>
+          <li>
+            A la derecha aparecen los <strong>documentos recientes</strong> de esa corrida.
+          </li>
+        </ol>
+
+        <div class="callout warn">
+          <strong>Importante:</strong> el backend procesa lo que ve en la carpeta que elegiste en esta PC.
+          Si movés archivos después de ingestar, la copia organizada queda guardada por separado
+          y podés abrirla desde Buscador o Documentos.
+        </div>
+
+        <h3>Qué significa la auditoría</h3>
+        <div class="grid-2">
+          <div class="card">
+            <p><strong>Archivos compatibles:</strong> PDF e imágenes que la app puede procesar.</p>
+            <p><strong>Texto nativo:</strong> el PDF ya trae texto seleccionable (más barato).</p>
+            <p><strong>Requiere OCR:</strong> escaneos o fotos donde hay que “leer” la imagen.</p>
+          </div>
+          <div class="card">
+            <p><strong>Estimación USD:</strong> rango aproximado antes de gastar.</p>
+            <p><strong>Desglose:</strong> OCR, extracción Gemini, embeddings y fallback Anthropic opcional.</p>
+            <p><strong>Muestra auditada:</strong> lista de archivos de ejemplo revisados.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="documentos">
+        <h2>Documentos — biblioteca y estados</h2>
+        <p>
+          Acá ves <strong>todos los archivos que entraron al sistema</strong>, no solo los de la última ingesta.
+          Podés filtrar, buscar por nombre o ruta, y abrir cualquier documento.
+        </p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Estado</th>
+              <th>Significado</th>
+              <th>Qué hacer</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pendientes</td>
+              <td>En cola, aún no procesados</td>
+              <td>Esperar o revisar si la ingesta sigue activa</td>
+            </tr>
+            <tr>
+              <td>Procesando</td>
+              <td>En OCR o extracción ahora</td>
+              <td>Esperar unos minutos y actualizar</td>
+            </tr>
+            <tr>
+              <td>Procesados</td>
+              <td>Indexados y buscables</td>
+              <td>Usar el Buscador o abrir el archivo</td>
+            </tr>
+            <tr>
+              <td>Para revisar</td>
+              <td>Extracción con baja confianza</td>
+              <td>Abrir y verificar datos manualmente</td>
+            </tr>
+            <tr>
+              <td>Fallidos</td>
+              <td>Error al procesar</td>
+              <td>Revisar si el PDF está corrupto o reintentar ingesta</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout">
+          Usá <span class="kbd">Actualizar</span> después de una ingesta larga para refrescar contadores y listado.
+        </div>
+      </section>
+
+      <section id="ia">
+        <h2>Configuración — carpetas, keys y límites</h2>
+        <p>
+          En <strong>Configuración</strong> podés repetir la elección de carpetas con <span class="kbd">Examinar...</span>
+          y definir las keys de IA. Los valores se guardan <strong>localmente en tu PC</strong>.
+        </p>
+
+        <div class="card">
+          <h3>Campos principales</h3>
+          <ul>
+            <li><strong>Proveedor principal:</strong> Google Gemini (recomendado), Anthropic o local sin IA externa.</li>
+            <li><strong>Google API Key:</strong> obligatoria para procesamiento completo con Gemini.</li>
+            <li><strong>Modelo Google / embeddings:</strong> dejar valores por defecto salvo indicación técnica.</li>
+            <li><strong>Anthropic API Key:</strong> opcional, para segunda revisión automática.</li>
+            <li><strong>Confianza mínima:</strong> umbral (0–1) bajo el cual se pide fallback.</li>
+            <li><strong>Presupuesto máximo por corrida:</strong> tope en USD para no exceder gasto en una ingesta.</li>
+            <li><strong>Usar Anthropic como fallback:</strong> activar solo si tenés key de Anthropic.</li>
+          </ul>
+        </div>
+
+        <p>
+          Después de cambiar carpetas, keys o modelos, tocá
+          <span class="kbd">Guardar carpetas e IA</span>.
+          Usá <span class="kbd">Chequear</span> en “Estado de servicios” para confirmar que el backend responde.
+        </p>
+      </section>
+
+      <section id="flujo">
+        <h2>Flujo recomendado (día a día)</h2>
+        <div class="card">
+          <h3>Para el operador de la agencia</h3>
+          <ol>
+            <li>Abrí la app y confirmá que no hay banner de error.</li>
+            <li>En <strong>Buscador</strong>, escribí patente, trámite o nombre.</li>
+            <li>Abrí el PDF desde el resultado si necesitás el original.</li>
+          </ol>
+
+          <h3>Para cargar material nuevo</h3>
+          <ol>
+            <li>En <strong>Carga</strong>, elegí la carpeta (ENARGAS, GNV, etc.).</li>
+            <li>Auditá costo → revisá la estimación → ingestá.</li>
+            <li>En <strong>Documentos</strong>, verificá que pasen a “Procesados”.</li>
+            <li>Probá búsquedas de control (patente o trámite conocido).</li>
+          </ol>
+        </div>
+
+        <div class="callout ok">
+          <strong>Alcance típico SCIVOLI:</strong> trámites ENARGAS/RMH en PDF y fotos operativas GNV
+          (patentes, vehículos, talleres). La contabilidad AFIP puede quedar fuera del alcance según acuerdo con el cliente.
+        </div>
+      </section>
+
+      <section id="problemas">
+        <h2>Problemas frecuentes</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Síntoma</th>
+              <th>Causa probable</th>
+              <th>Solución</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Error al guardar carpeta en Win7</td>
+              <td>Versión antigua intentaba usar Docker</td>
+              <td>Actualizar a <strong>v0.1.4+</strong> (<code>windows-386-win7.zip</code>)</td>
+            </tr>
+            <tr>
+              <td>Banner “backend desconectado”</td>
+              <td>Docker parado, Win7 sin Docker, o túnel no activo</td>
+              <td>Win10/11: Docker Desktop → <span class="kbd">Reintentar conexión</span>. Win7: túnel SSH a localhost:8080</td>
+            </tr>
+            <tr>
+              <td>No aparece botón Examinar</td>
+              <td>Versión vieja de la app</td>
+              <td>Actualizar release y abrir pantalla <strong>Carga</strong> o <strong>Configuración</strong></td>
+            </tr>
+            <tr>
+              <td>La auditoría no encuentra archivos</td>
+              <td>Carpeta vacía o sin PDF/imágenes</td>
+              <td>Verificar ruta y tipos de archivo soportados</td>
+            </tr>
+            <tr>
+              <td>Búsqueda sin resultados</td>
+              <td>Documentos aún no ingestados o mal escritos</td>
+              <td>Revisar en Documentos si están “Procesados”; probar otro formato (ej. solo números del trámite)</td>
+            </tr>
+            <tr>
+              <td>Error al abrir archivo</td>
+              <td>Copia movida o eliminada del disco</td>
+              <td>Reingestar desde la carpeta original</td>
+            </tr>
+            <tr>
+              <td>Costo muy alto en auditoría</td>
+              <td>Muchos escaneos sin texto nativo</td>
+              <td>Reducir muestra, procesar por lotes, o subir presupuesto en IA</td>
+            </tr>
+            <tr>
+              <td>Documentos en “Fallidos”</td>
+              <td>PDF corrupto o ilegible</td>
+              <td>Abrir manualmente el archivo; excluirlo o reescanear</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="faq" class="faq">
+        <h2>Preguntas frecuentes</h2>
+
+        <details>
+          <summary>¿Necesito internet?</summary>
+          <p>Sí, para usar Google Gemini (y Anthropic si está activo). Docker y la base de datos corren en tu PC.</p>
+        </details>
+
+        <details>
+          <summary>¿Se modifican los archivos originales?</summary>
+          <p>No. La app copia y organiza en su almacenamiento interno. La carpeta de origen queda intacta.</p>
+        </details>
+
+        <details>
+          <summary>¿Puedo usar la app en más de una PC?</summary>
+          <p>Sí. Cada PC tiene su configuración y carpeta de origen. La base de datos es local a cada instalación.</p>
+        </details>
+
+        <details>
+          <summary>¿Qué pasa si cierro la app durante una ingesta?</summary>
+          <p>Conviene dejarla abierta hasta terminar. Si se interrumpe, revisá en Documentos qué quedó pendiente o fallido y reintentá.</p>
+        </details>
+
+        <details>
+          <summary>¿Dónde pido la Google API Key?</summary>
+          <p>En <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>.
+          Creá una key y pegala en la pantalla IA de la app.</p>
+        </details>
+      </section>
+
+      <footer>
+        <p>
+          <strong>Archivo SCIVOLI GNC</strong> — Agencia TAUP · Manual generado para uso interno del cliente.
+        </p>
+        <p class="muted">
+          Soporte técnico: revisar Docker Desktop, keys en pantalla IA y este manual antes de escalar incidentes.
+        </p>
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    const links = document.querySelectorAll('.sidebar nav a');
+    const sections = [...links].map((link) => document.querySelector(link.getAttribute('href')));
+
+    function updateActiveLink() {
+      const scrollY = window.scrollY + 120;
+      let current = 0;
+      sections.forEach((section, index) => {
+        if (section && section.offsetTop <= scrollY) current = index;
+      });
+      links.forEach((link, index) => {
+        link.classList.toggle('active', index === current);
+      });
+    }
+
+    window.addEventListener('scroll', updateActiveLink, { passive: true });
+    updateActiveLink();
+  </script>
+</body>
+</html>

@@ -89,6 +89,7 @@ try {
     Copy-Item $runtimeExe.Directory.FullName (Join-Path $bundleDir "webview2") -Recurse -Force
 
     Copy-Item (Join-Path $repoRoot "docs\WIN7-INSTALACION.md") (Join-Path $bundleDir "LEEME-WIN7.txt") -Force
+    Copy-Item (Join-Path $repoRoot "docs\manual-de-uso.html") (Join-Path $bundleDir "manual-de-uso.html") -Force
 
     New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
     $zipName = "ArchivoScivoliGNC-$version-windows-386-win7.zip"
