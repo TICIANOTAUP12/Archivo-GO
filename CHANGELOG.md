@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.4 — 2026-07-05
+
+Fix guardar carpeta de origen en Windows 7 sin Docker.
+
+### Cambios
+
+- `SaveWorkspaceSettings` guarda la carpeta aunque Docker no esté instalado (Win7).
+- `StartServices` omite Docker silenciosamente si no hay binario disponible.
+- `ServiceStatus` expone `dockerAvailable` y mensajes claros para PCs legacy.
+- `settings.json` se guarda junto al `.exe` (portable Win7).
+
 ## v0.1.3 — 2026-07-05
 
 Paquete Win7 incluye **WebView2 109 x86** embebido (última versión compatible con Windows 7).

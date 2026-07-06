@@ -26,6 +26,7 @@ export type WorkspaceSettings = {
 export type ServiceStatus = {
   backendReady: boolean;
   message: string;
+  dockerAvailable: boolean;
 };
 
 const desktopBridgeUnavailableMessage =

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
+  getNativeServiceStatus,
   getWorkspaceSettings,
   saveWorkspaceSettings,
   selectNativeDirectory,
@@ -127,6 +128,13 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettingsMessage(null);
     try {
       await saveWorkspaceSettings(settings);
+      const serviceStatus = await getNativeServiceStatus();
+      if (serviceStatus && serviceStatus.dockerAvailable === false) {
+        setSettingsMessage(
+          'Carpeta guardada correctamente. En Windows 7 el backend no corre en esta PC; debe estar en otra máquina con Docker o llegar por túnel SSH a localhost:8080.',
+        );
+        return;
+      }
       setSettingsMessage('Configuración guardada. Los servicios fueron reiniciados con la carpeta de origen y APIs actuales.');
     } catch (error) {
       setSettingsError(error instanceof Error ? error.message : 'No pudimos guardar la configuración.');

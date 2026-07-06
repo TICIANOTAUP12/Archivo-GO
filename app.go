@@ -24,8 +24,9 @@ type App struct {
 }
 
 type ServiceStatus struct {
-	BackendReady bool   `json:"backendReady"`
-	Message      string `json:"message"`
+	BackendReady    bool   `json:"backendReady"`
+	Message         string `json:"message"`
+	DockerAvailable bool   `json:"dockerAvailable"`
 }
 
 type WorkspaceSettings struct {
@@ -60,6 +61,10 @@ func (app *App) Shutdown(ctx context.Context) {
 }
 
 func (app *App) StartServices() error {
+	if !isDockerAvailable() {
+		return nil
+	}
+
 	settings, err := loadWorkspaceSettings()
 	if err != nil {
 		return err
@@ -110,12 +115,16 @@ func (app *App) SaveWorkspaceSettings(settings WorkspaceSettings) error {
 	if err := validateWorkspaceSettings(settings); err != nil {
 		return err
 	}
+	if err := ensureWorkspaceDirectories(settings); err != nil {
+		return err
+	}
 	if err := saveWorkspaceSettings(settings); err != nil {
 		return err
 	}
-	if err := app.StopServices(); err != nil {
-		return err
+	if !isDockerAvailable() {
+		return nil
 	}
+	_ = app.StopServices()
 	return app.StartServices()
 }
 
@@ -127,10 +136,15 @@ func (app *App) SelectDirectory(title string) (string, error) {
 }
 
 func (app *App) ServiceStatus() ServiceStatus {
+	dockerAvailable := isDockerAvailable()
 	if err := pingBackend("http://localhost:8080/health"); err != nil {
-		return ServiceStatus{BackendReady: false, Message: err.Error()}
+		message := err.Error()
+		if !dockerAvailable {
+			message = "Backend offline: esta PC no tiene Docker (Windows 7). Guardá la carpeta igual; el backend debe correr en otra máquina o vía túnel SSH a localhost:8080."
+		}
+		return ServiceStatus{BackendReady: false, Message: message, DockerAvailable: dockerAvailable}
 	}
-	return ServiceStatus{BackendReady: true, Message: "Backend disponible"}
+	return ServiceStatus{BackendReady: true, Message: "Backend disponible", DockerAvailable: dockerAvailable}
 }
 
 func (app *App) OpenFile(path string) error {
@@ -289,13 +303,26 @@ func runCommandWithSettings(settings WorkspaceSettings, name string, args ...str
 	return nil
 }
 
+func appRootDir() (string, error) {
+	exe, err := os.Executable()
+	if err != nil {
+		return os.Getwd()
+	}
+	return filepath.Dir(exe), nil
+}
+
+func isDockerAvailable() bool {
+	_, err := exec.LookPath("docker")
+	return err == nil
+}
+
 func ensureDefaultWorkspaceSettings() error {
 	settings, err := loadWorkspaceSettings()
 	if err == nil && settings.InputPath != "" {
 		return nil
 	}
 
-	projectRoot, err := os.Getwd()
+	projectRoot, err := appRootDir()
 	if err != nil {
 		return err
 	}
@@ -377,7 +404,7 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 		settings.MaxRunBudgetUSD = 300
 	}
 	if settings.StoragePath == "" {
-		if projectRoot, err := os.Getwd(); err == nil {
+		if projectRoot, err := appRootDir(); err == nil {
 			settings.StoragePath = filepath.Join(projectRoot, "data", "storage")
 		}
 	}
@@ -411,7 +438,7 @@ func workspaceSettingsEnv(settings WorkspaceSettings) []string {
 }
 
 func workspaceSettingsPath() (string, error) {
-	projectRoot, err := os.Getwd()
+	projectRoot, err := appRootDir()
 	if err != nil {
 		return "", err
 	}

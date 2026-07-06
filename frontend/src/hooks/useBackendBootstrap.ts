@@ -73,6 +73,13 @@ export function useBackendBootstrap(): UseBackendBootstrapResult {
     }
 
     setBackendStatus('offline');
+    if (nativeStatus?.dockerAvailable === false) {
+      setBackendMessage(
+        'Windows 7 no puede ejecutar Docker localmente. Guardá la carpeta de origen igual; el backend debe correr en otra PC o llegar por túnel SSH a localhost:8080.',
+      );
+      return;
+    }
+
     setBackendMessage(
       'Backend local no disponible. Abrí Docker Desktop y ejecutá: docker compose up -d en Archivo-GO.',
     );

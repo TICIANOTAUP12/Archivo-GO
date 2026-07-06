@@ -38,7 +38,17 @@ Si ya tenés el `.exe` suelto:
 
 - PC **32 bits** ("Equipo basado en X86" en Información del sistema).
 - Parche **KB4474419** (SHA-2) instalado en Windows 7.
-- **Docker no funciona** en Win7: la app abre la interfaz pero el backend queda offline.
+- **Docker no funciona** en Win7: el backend **no arranca en esta PC**. La interfaz sí abre; podés elegir y guardar la carpeta de origen sin error.
+
+## Backend en Windows 7
+
+Esta PC solo ejecuta la **interfaz**. Para auditar, ingestar y buscar documentos hace falta el backend FastAPI en otra máquina:
+
+1. En una PC con **Windows 10/11 + Docker Desktop**, levantá `docker compose up -d` en Archivo-GO.
+2. Desde la PC Win7, creá un **túnel SSH** que reenvíe el puerto 8080 de esa máquina a `localhost:8080` en Win7 (PuTTY/plink con `-L 8080:127.0.0.1:8080`).
+3. La app Win7 hablará con `http://localhost:8080` como si el backend fuera local.
+
+Si no hay túnel ni backend remoto, verás "Backend offline" — es normal en Win7 sin Docker.
 
 ## Si sigue sin abrir
 
