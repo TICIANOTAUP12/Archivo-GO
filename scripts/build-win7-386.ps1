@@ -48,7 +48,13 @@ try {
     foreach ($package in $win7Packages) {
         go1.20.14 get $package
     }
+    go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
     go1.20.14 mod tidy
+
+    $goModContents = Get-Content go.mod -Raw
+    if ($goModContents -match '5959a4027728') {
+        throw "Win7 go.mod still pins ledongthuc/pdf Go 1.24+; check module replace"
+    }
 
     go1.20.14 install github.com/wailsapp/wails/v2/cmd/wails@v2.8.1
     $wails = Join-Path (go1.20.14 env GOPATH) "bin\wails.exe"
