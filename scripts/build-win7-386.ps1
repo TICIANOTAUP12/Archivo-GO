@@ -26,13 +26,28 @@ function Set-GoModVersion {
 
 try {
     Set-GoModVersion "1.20"
+    if (Test-Path go.sum) {
+        Remove-Item go.sum -Force
+    }
 
-    go1.20.14 get github.com/wailsapp/wails/v2@v2.8.1
-    go1.20.14 get github.com/wailsapp/go-webview2@v1.0.10
-    # Pin deps compatible with Go 1.20 (main go.mod pulls Go 1.24+ versions for localengine).
-    go1.20.14 get modernc.org/sqlite@v1.28.0
-    go1.20.14 get github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
-    go1.20.14 get golang.org/x/sys@v0.20.0
+    go1.20.14 mod edit -droprequire=modernc.org/sqlite 2>$null
+    go1.20.14 mod edit -droprequire=github.com/ledongthuc/pdf 2>$null
+    go1.20.14 mod edit -droprequire=github.com/google/uuid 2>$null
+    go1.20.14 mod edit -droprequire=github.com/wailsapp/wails/v2 2>$null
+
+    $win7Packages = @(
+        "github.com/wailsapp/wails/v2@v2.8.1"
+        "github.com/wailsapp/go-webview2@v1.0.10"
+        "github.com/google/uuid@v1.6.0"
+        "github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8"
+        "modernc.org/sqlite@v1.23.1"
+        "modernc.org/libc@v1.22.5"
+        "golang.org/x/sys@v0.15.0"
+        "golang.org/x/text@v0.14.0"
+    )
+    foreach ($package in $win7Packages) {
+        go1.20.14 get $package
+    }
     go1.20.14 mod tidy
 
     go1.20.14 install github.com/wailsapp/wails/v2/cmd/wails@v2.8.1
