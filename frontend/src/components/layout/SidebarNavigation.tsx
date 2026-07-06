@@ -15,7 +15,7 @@ type NavigationItem = {
 
 const navigationItems: NavigationItem[] = [
   { section: 'search', label: 'Buscador', description: 'Encontrar casos' },
-  { section: 'ingest', label: 'Carga', description: 'Carpetas, auditoría e ingesta' },
+  { section: 'ingest', label: 'Carga', description: 'Procesar carpeta con IA' },
   { section: 'documents', label: 'Documentos', description: 'Biblioteca y estados' },
   { section: 'settings', label: 'Configuración', description: 'Carpetas, IA y servicios' },
 ];

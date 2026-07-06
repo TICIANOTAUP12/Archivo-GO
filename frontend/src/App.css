@@ -464,6 +464,43 @@ p {
   margin-top: 6px;
 }
 
+.primaryActionCard {
+  background: linear-gradient(135deg, #fff 0%, var(--brand-yellow-soft) 100%);
+  border: 1px solid rgba(245, 197, 24, 0.45);
+  border-radius: 16px;
+  display: grid;
+  gap: 14px;
+  margin: 22px 0;
+  padding: 20px;
+}
+
+.primaryActionCard h3 {
+  margin-bottom: 6px;
+}
+
+.primaryActionButton {
+  font-size: 1.05rem;
+  justify-self: start;
+  min-width: 260px;
+  padding: 14px 20px;
+}
+
+.inlineHint {
+  color: #66758a;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.warningHint {
+  color: #9a6700;
+}
+
+.optionalAuditForm {
+  border-top: 1px solid #e0e8f2;
+  margin-top: 18px;
+  padding-top: 8px;
+}
+
 .sidebarFooter {
   margin-top: 18px;
   padding-top: 16px;

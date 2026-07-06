@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.1.6 — 2026-07-06
+
+Botón principal **Procesar carpeta con IA** (auditoría + ingesta en un paso).
+
+### Cambios
+
+- CTA visible en pantalla Carga: analiza carpeta, procesa con OCR/IA e indexa.
+- Flujo automático: paso 1 auditoría → paso 2 ingesta sin botón oculto.
+- Guarda carpetas antes de procesar.
+- Botón deshabilitado con aviso si el backend no está conectado.
+
 ## v0.1.5 — 2026-07-06
 
 Manual de uso, botón Examinar y carpetas en Configuración.

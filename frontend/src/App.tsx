@@ -43,13 +43,13 @@ function App() {
           <section className="panelStack">
             <div className="sectionHero">
               <p className="eyebrow">Carga documental</p>
-              <h1>Auditoría e ingesta</h1>
+              <h1>Procesar archivo con IA</h1>
               <p className="heroText">
-                Revisá costos antes de procesar y mandá documentos al pipeline de OCR, extracción e indexación.
+                Elegí la carpeta, tocá Procesar con IA y el sistema analiza, extrae datos y organiza el archivo digital.
               </p>
             </div>
             <section className="grid">
-              <IngestionPanel onIngestComplete={refreshRecentDocuments} />
+              <IngestionPanel isBackendReady={isBackendReady} onIngestComplete={refreshRecentDocuments} />
               <RecentDocuments
                 documents={recentDocuments}
                 isRefreshing={isRefreshing}

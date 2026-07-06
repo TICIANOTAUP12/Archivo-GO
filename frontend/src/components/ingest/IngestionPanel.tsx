@@ -6,20 +6,36 @@ import { AuditSummary } from './AuditSummary';
 import { ProgressUpload } from './ProgressUpload';
 
 type IngestionPanelProps = {
+  isBackendReady: boolean;
   onIngestComplete: () => Promise<void>;
 };
 
 const processSteps = [
-  'Tocá Examinar... y elegí la carpeta con PDFs e imágenes.',
-  'Guardá la carpeta de origen para que la app la recuerde.',
-  'Auditá costo para ver archivos, páginas y gasto estimado.',
-  'Si el costo cierra, ingestá para indexar y poder buscar.',
+  'Examinar... → elegí carpeta de origen y de destino.',
+  'Guardá las carpetas.',
+  'Tocá Procesar carpeta con IA para analizar, extraer datos y organizar el archivo.',
 ];
 
-export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
+function processingLabel(phase: 'auditing' | 'ingesting'): string {
+  if (phase === 'auditing') {
+    return 'Paso 1/2: analizando archivos, páginas y costo estimado...';
+  }
+  return 'Paso 2/2: procesando con OCR, IA y organizando copias indexadas...';
+}
+
+export function IngestionPanel({ isBackendReady, onIngestComplete }: IngestionPanelProps) {
   const [sampleLimit, setSampleLimit] = useState<number>(500);
-  const { audit, ingest, isAuditing, isIngesting, error, performAudit, performIngest } =
-    useIngest(onIngestComplete);
+  const {
+    audit,
+    ingest,
+    isAuditing,
+    isIngesting,
+    isProcessing,
+    processingPhase,
+    error,
+    performAudit,
+    performFullProcessing,
+  } = useIngest(onIngestComplete);
   const {
     settings,
     isSavingSettings,
@@ -33,9 +49,16 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
   } = useWorkspaceSettings();
   const hasSourcePath = settings.inputPath.trim().length > 0;
   const hasStoragePath = settings.storagePath.trim().length > 0;
-  const canRun = hasSourcePath && hasStoragePath && !isSavingSettings;
+  const canConfigure = hasSourcePath && hasStoragePath && !isSavingSettings;
+  const canProcess = canConfigure && isBackendReady && !isProcessing;
 
-  function handleAudit(event: FormEvent<HTMLFormElement>): void {
+  async function handleStartProcessing(): Promise<void> {
+    if (!canConfigure) return;
+    await persistSettings();
+    await performFullProcessing(settings.inputPath, sampleLimit);
+  }
+
+  function handleAuditOnly(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     void performAudit(settings.inputPath, sampleLimit);
   }
@@ -45,7 +68,7 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
       <div className="sectionHeader">
         <div>
           <p className="eyebrow">Carga documental</p>
-          <h2>Auditoría e ingesta</h2>
+          <h2>Procesar archivo con IA</h2>
         </div>
       </div>
 
@@ -62,68 +85,91 @@ export function IngestionPanel({ onIngestComplete }: IngestionPanelProps) {
       {settingsError ? <section className="inlineError strong">{settingsError}</section> : null}
       {settingsMessage ? <p className="successMessage">{settingsMessage}</p> : null}
 
-      <form onSubmit={handleAudit}>
-        <div className="pathPickerGrid">
-          <FolderPathPicker
-            label="Carpeta de origen (documentos a procesar)"
-            hint="PDFs e imágenes que querés auditar e ingestar."
-            value={settings.inputPath}
-            placeholder="Ej. C:\ARCHIVOS_GO\ENARGAS"
-            disabled={isSavingSettings}
-            onChange={setInputPath}
-            onBrowse={() => void selectInputPath()}
-          />
-          <FolderPathPicker
-            label="Carpeta de destino (copias organizadas)"
-            hint="Donde se guardan los casos procesados en esta PC."
-            value={settings.storagePath}
-            placeholder="Ej. C:\ARCHIVOS_GO\storage"
-            disabled={isSavingSettings}
-            onChange={setStoragePath}
-            onBrowse={() => void selectStoragePath()}
-          />
-        </div>
+      <div className="pathPickerGrid">
+        <FolderPathPicker
+          label="Carpeta de origen (documentos a procesar)"
+          hint="PDFs e imágenes que querés analizar e indexar."
+          value={settings.inputPath}
+          placeholder="Ej. C:\ARCHIVOS_GO\ENARGAS"
+          disabled={isSavingSettings || isProcessing}
+          onChange={setInputPath}
+          onBrowse={() => void selectInputPath()}
+        />
+        <FolderPathPicker
+          label="Carpeta de destino (copias organizadas)"
+          hint="Donde se guardan los casos procesados en esta PC."
+          value={settings.storagePath}
+          placeholder="Ej. C:\ARCHIVOS_GO\storage"
+          disabled={isSavingSettings || isProcessing}
+          onChange={setStoragePath}
+          onBrowse={() => void selectStoragePath()}
+        />
+      </div>
 
+      <button
+        type="button"
+        className="secondary"
+        disabled={!canConfigure || isProcessing}
+        onClick={() => void persistSettings()}
+      >
+        {isSavingSettings ? 'Guardando carpetas...' : 'Guardar carpetas'}
+      </button>
+
+      <section className="primaryActionCard">
+        <div>
+          <h3>Archivado inteligente</h3>
+          <p className="muted">
+            Analiza la carpeta, lee PDFs e imágenes con OCR, extrae patentes/trámites/matriculas con IA,
+            organiza copias en destino e indexa todo para buscar desde el Buscador.
+          </p>
+        </div>
         <button
           type="button"
-          className="secondary"
-          disabled={!hasSourcePath || !hasStoragePath || isSavingSettings}
-          onClick={() => void persistSettings()}
+          className="primaryActionButton"
+          disabled={!canProcess}
+          onClick={() => void handleStartProcessing()}
         >
-          {isSavingSettings ? 'Guardando carpetas...' : 'Guardar carpetas'}
+          {isProcessing
+            ? processingPhase === 'auditing'
+              ? 'Analizando carpeta...'
+              : 'Procesando con IA...'
+            : 'Procesar carpeta con IA'}
         </button>
+        {!isBackendReady ? (
+          <p className="inlineHint warningHint">
+            Conectá el backend antes de procesar. En Windows 7 puede requerir túnel SSH a localhost:8080.
+          </p>
+        ) : null}
+        {!canConfigure ? (
+          <p className="inlineHint">Elegí y guardá ambas carpetas para habilitar el procesamiento.</p>
+        ) : null}
+      </section>
 
+      {isAuditing ? <ProgressUpload label={processingLabel('auditing')} /> : null}
+      {isIngesting ? <ProgressUpload label={processingLabel('ingesting')} /> : null}
+      {audit ? <AuditSummary audit={audit} /> : null}
+
+      <form className="optionalAuditForm" onSubmit={handleAuditOnly}>
         <label>
-          Muestra para estimar costo
+          Muestra para estimar costo (solo auditoría)
           <input
             type="number"
             min={1}
             max={10000}
             value={sampleLimit}
+            disabled={isProcessing}
             onChange={(event) => setSampleLimit(Number(event.target.value))}
           />
         </label>
-        <button disabled={isAuditing || !canRun}>{isAuditing ? 'Auditando...' : 'Auditar costo'}</button>
+        <button type="submit" className="ghostButton" disabled={isAuditing || !canProcess}>
+          {isAuditing ? 'Auditando...' : 'Solo auditar costo (sin procesar)'}
+        </button>
       </form>
 
-      {isAuditing ? <ProgressUpload label="Revisando archivos y páginas estimadas" /> : null}
-      {audit ? <AuditSummary audit={audit} /> : null}
-
-      {audit ? (
-        <button
-          type="button"
-          className="secondary"
-          disabled={isIngesting || !canRun}
-          onClick={() => void performIngest(settings.inputPath)}
-        >
-          {isIngesting ? 'Procesando...' : 'Ingestar documentos'}
-        </button>
-      ) : null}
-
-      {isIngesting ? <ProgressUpload label="Procesando documentos con OCR y LLM" /> : null}
       {ingest ? (
-        <p className="muted">
-          Corrida {ingest.run_id} con {ingest.queued_documents} documentos en cola.
+        <p className="successMessage">
+          Procesamiento iniciado: corrida {ingest.run_id} con {ingest.queued_documents} documentos en cola.
+          Revisá el avance en Documentos o en la lista de recientes.
         </p>
       ) : null}
     </section>
