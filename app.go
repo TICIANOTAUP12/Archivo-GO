@@ -147,21 +147,11 @@ func (app *App) SaveWorkspaceSettings(settings WorkspaceSettings) error {
 }
 
 func (app *App) OpenHelpManual() error {
-	root, err := appRootDir()
+	path, err := resolveHelpManualPath()
 	if err != nil {
 		return err
 	}
-
-	candidates := []string{
-		filepath.Join(root, "manual-de-uso.html"),
-		filepath.Join(root, "docs", "manual-de-uso.html"),
-	}
-	for _, candidate := range candidates {
-		if fileExists(candidate) {
-			return openFile(candidate)
-		}
-	}
-	return errors.New("no se encontró manual-de-uso.html junto a la aplicación")
+	return openFile(path)
 }
 
 func (app *App) SelectDirectory(title string) (string, error) {
@@ -614,14 +604,20 @@ func normalizeBackendURL(raw string) string {
 }
 
 func openFile(path string) error {
+	absPath, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+
 	var command *exec.Cmd
 	switch runtime.GOOS {
 	case "windows":
-		command = exec.Command("rundll32.exe", "url.dll,FileProtocolHandler", path)
+		// `start` abre .html con el navegador predeterminado (más fiable que rundll32 con rutas con espacios).
+		command = exec.Command("cmd", "/c", "start", "", absPath)
 	case "darwin":
-		command = exec.Command("open", path)
+		command = exec.Command("open", absPath)
 	default:
-		command = exec.Command("xdg-open", path)
+		command = exec.Command("xdg-open", absPath)
 	}
 	return command.Start()
 }

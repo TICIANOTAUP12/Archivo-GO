@@ -311,6 +311,7 @@
         <a href="#carga">Carga e ingesta</a>
         <a href="#documentos">Biblioteca</a>
         <a href="#ia">Configuración IA</a>
+        <a href="#api-keys">Cómo obtener API keys</a>
         <a href="#flujo">Flujo recomendado</a>
         <a href="#problemas">Problemas frecuentes</a>
         <a href="#faq">Preguntas frecuentes</a>
@@ -325,7 +326,7 @@
           Guía práctica para buscar trámites, patentes y matrículas en documentos de la agencia
           sin recorrer carpetas a mano. Pensada para el equipo de SCIVOLI GNC.
         </p>
-        <p><span class="pill">Versión del manual: 1.1</span> · <span class="pill">Julio 2026</span> · <span class="pill">App v0.1.4+</span></p>
+        <p><span class="pill">Versión del manual: 1.2</span> · <span class="pill">Julio 2026</span> · <span class="pill">App v0.1.4+</span></p>
       </header>
 
       <section id="que-es">
@@ -402,6 +403,11 @@
               <td>Anthropic API Key (opcional)</td>
               <td>Segunda revisión si hay baja confianza</td>
               <td>Solo si activás el fallback</td>
+            </tr>
+            <tr>
+              <td>OpenAI API Key (opcional)</td>
+              <td>Proveedor alternativo (ChatGPT)</td>
+              <td>Si elegís OpenAI como proveedor principal</td>
             </tr>
           </tbody>
         </table>
@@ -718,6 +724,137 @@
         </p>
       </section>
 
+      <section id="api-keys">
+        <h2>Cómo obtener las API keys de cada proveedor</h2>
+        <p>
+          Las keys se pegan en <strong>IA → Modelos y keys</strong> y quedan guardadas <strong>solo en tu PC</strong>.
+          En modo Win7 (motor local + gateway), la app las envía al VPS por cada página procesada; el servidor no las guarda.
+        </p>
+
+        <div class="callout warn">
+          <strong>Importante:</strong> cada proveedor cobra por uso (tokens, páginas OCR, etc.).
+          Revisá el presupuesto máximo por corrida en la misma pantalla antes de ingestar carpetas grandes.
+        </div>
+
+        <div class="card">
+          <h3>1. Google Gemini (recomendado)</h3>
+          <p>Es el proveedor principal del sistema: extracción de datos, OCR de escaneos y embeddings (si lo elegís).</p>
+          <ol class="steps">
+            <li>
+              Abrí <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio → API keys</a>
+              e iniciá sesión con tu cuenta Google.
+            </li>
+            <li>
+              Tocá <strong>Create API key</strong>. Si te pide un proyecto de Google Cloud, elegí uno existente o creá uno nuevo
+              (nombre libre, ej. <code>scivoli-archivo</code>).
+            </li>
+            <li>
+              Copiá la key que empieza con <code>AIza...</code>. <strong>No la compartas</strong> por mail ni chat.
+            </li>
+            <li>
+              En la app: <strong>IA</strong> → campo <strong>Google API Key</strong> → pegá la key →
+              <span class="kbd">Guardar carpetas e IA</span>.
+            </li>
+            <li>
+              Dejá <strong>Proveedor principal: Google Gemini</strong> salvo que quieras usar otro.
+            </li>
+          </ol>
+          <p class="muted">
+            Google ofrece cuota gratuita limitada en AI Studio. Para volúmenes altos puede pedir activar facturación en
+            <a href="https://console.cloud.google.com/billing" target="_blank" rel="noopener">Google Cloud Billing</a>.
+          </p>
+        </div>
+
+        <div class="card">
+          <h3>2. OpenAI (ChatGPT) — opcional</h3>
+          <p>Usalo si en <strong>Proveedor principal</strong> elegís <strong>OpenAI ChatGPT</strong> en lugar de Gemini.</p>
+          <ol class="steps">
+            <li>
+              Entrá a <a href="https://platform.openai.com/signup" target="_blank" rel="noopener">platform.openai.com</a>
+              y creá cuenta o iniciá sesión.
+            </li>
+            <li>
+              En el menú lateral: <strong>API keys</strong>
+              (<a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">enlace directo</a>).
+            </li>
+            <li>
+              Tocá <strong>Create new secret key</strong>, poné un nombre (ej. <code>scivoli-pc-oficina</code>) y confirmá.
+            </li>
+            <li>
+              Copiá la key <code>sk-...</code> <strong>en ese momento</strong> — OpenAI no la vuelve a mostrar completa.
+            </li>
+            <li>
+              En la app: <strong>IA</strong> → <strong>OpenAI API Key</strong> → pegá → guardá.
+              Elegí <strong>Proveedor principal: OpenAI ChatGPT</strong> si querés usarla como motor principal.
+            </li>
+            <li>
+              Cargá crédito o método de pago en
+              <a href="https://platform.openai.com/settings/organization/billing" target="_blank" rel="noopener">Billing</a>
+              si la cuenta es nueva (sin saldo no procesa documentos).
+            </li>
+          </ol>
+        </div>
+
+        <div class="card">
+          <h3>3. Anthropic (Claude) — fallback opcional</h3>
+          <p>
+            No hace falta para el día a día. Sirve como <strong>segunda revisión</strong> cuando la extracción tiene baja confianza,
+            si activás <strong>Usar Anthropic como fallback</strong>.
+          </p>
+          <ol class="steps">
+            <li>
+              Registrate en <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a>.
+            </li>
+            <li>
+              Andá a <strong>Settings → API keys</strong>
+              (<a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">enlace directo</a>).
+            </li>
+            <li>
+              Tocá <strong>Create Key</strong>, copiá la key <code>sk-ant-...</code>.
+            </li>
+            <li>
+              En la app: <strong>IA</strong> → <strong>Anthropic API Key fallback</strong> → pegá → guardá.
+            </li>
+            <li>
+              Activá el checkbox <strong>Usar Anthropic como fallback</strong> y ajustá <strong>Confianza mínima</strong>
+              (por defecto 0,82): por debajo de ese valor se pide revisión con Claude.
+            </li>
+          </ol>
+        </div>
+
+        <div class="callout ok">
+          <strong>Resumen rápido:</strong> para SCIVOLI alcanza con <strong>Google API Key</strong>.
+          OpenAI y Anthropic son alternativas o refuerzo; configurá solo las que vayas a usar.
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Campo en la app</th>
+              <th>Portal para crear la key</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Google Gemini</td>
+              <td>Google API Key</td>
+              <td><a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a></td>
+            </tr>
+            <tr>
+              <td>OpenAI</td>
+              <td>OpenAI API Key</td>
+              <td><a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener">platform.openai.com/api-keys</a></td>
+            </tr>
+            <tr>
+              <td>Anthropic</td>
+              <td>Anthropic API Key fallback</td>
+              <td><a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com/settings/keys</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
       <section id="flujo">
         <h2>Flujo recomendado (día a día)</h2>
         <div class="card">
@@ -794,6 +931,16 @@
               <td>PDF corrupto o ilegible</td>
               <td>Abrir manualmente el archivo; excluirlo o reescanear</td>
             </tr>
+            <tr>
+              <td>No abre el manual de uso</td>
+              <td>Versión antigua sin manual embebido</td>
+              <td>Actualizar la app a la última release; el manual también está en el ZIP como <code>manual-de-uso.html</code></td>
+            </tr>
+            <tr>
+              <td>Error de API / key inválida</td>
+              <td>Key mal copiada, expirada o sin saldo</td>
+              <td>Regenerá la key en el portal del proveedor y volvé a pegarla en IA. Revisá facturación en Google/OpenAI/Anthropic</td>
+            </tr>
           </tbody>
         </table>
       </section>
@@ -833,8 +980,19 @@
 
         <details>
           <summary>¿Dónde pido la Google API Key?</summary>
-          <p>En <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>.
-          Creá una key y pegala en la pantalla IA de la app.</p>
+          <p>
+            En <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>:
+            <strong>Create API key</strong> → copiá → pegá en <strong>IA → Google API Key</strong>.
+            Pasos detallados en la sección <a href="#api-keys">Cómo obtener API keys</a>.
+          </p>
+        </details>
+
+        <details>
+          <summary>¿Necesito keys de OpenAI o Anthropic?</summary>
+          <p>
+            No obligatoriamente. Con <strong>Google Gemini</strong> alcanza para operar.
+            OpenAI solo si elegís ese proveedor como principal. Anthropic solo si activás el fallback de baja confianza.
+          </p>
         </details>
       </section>
 

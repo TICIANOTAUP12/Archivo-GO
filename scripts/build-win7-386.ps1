@@ -113,6 +113,21 @@ try {
         Write-Host "Tesseract not found in third_party/tesseract-win32 — added LEEME-OCR.txt placeholder"
     }
 
+    $popplerSource = Join-Path $repoRoot "third_party\poppler-win32"
+    $popplerTarget = Join-Path $bundleDir "poppler"
+    if (Test-Path (Join-Path $popplerSource "pdftoppm.exe")) {
+        Copy-Item $popplerSource $popplerTarget -Recurse -Force
+        Write-Host "Bundled Poppler x86 from third_party/poppler-win32"
+    } else {
+        New-Item -ItemType Directory -Force -Path $popplerTarget | Out-Null
+        @(
+            "Colocá pdftoppm.exe y DLLs de Poppler aquí para OCR de PDF escaneado."
+            "Descarga: https://github.com/oschwartz10612/poppler-windows/releases (win32)"
+            "Ver docs/WIN7-INSTALACION.md"
+        ) | Set-Content (Join-Path $popplerTarget "LEEME-POPPLER.txt") -Encoding UTF8
+        Write-Host "Poppler not found in third_party/poppler-win32 — added LEEME-POPPLER.txt placeholder"
+    }
+
     New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
     $zipName = "ArchivoScivoliGNC-$version-windows-386-win7.zip"
     if (Test-Path (Join-Path $OutputDir $zipName)) {

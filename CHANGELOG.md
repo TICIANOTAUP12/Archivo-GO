@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.1.10 — 2026-07-06
+
+Motor local Win7 + gateway IA stateless.
+
+### Cambios
+
+- **Motor local Go + SQLite** en Win7 (`:8090`): auditoría, ingesta, búsqueda sin Docker.
+- **Gateway IA** (`/v1/extract`, `/v1/embed`): URL + token configurables en pantalla IA.
+- OCR PDF escaneado con **Poppler** (`pdftoppm`) en el zip Win7.
+- Manual de uso **embebido** (abre aunque no esté el `.html` al lado del exe).
+- Fix gateway Docker: `CORS_ORIGINS` vacío ya no tumba el contenedor.
+- Scripts: `start-gateway-local.ps1`, `run-gateway-tests.ps1`.
+- Docs: `GATEWAY-DEPLOY.md`, `WIN7-INSTALACION.md`, manual actualizado.
+
 ## v0.1.9 — 2026-07-06
 
 URL de backend remoto configurable desde IA.

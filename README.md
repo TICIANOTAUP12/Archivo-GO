@@ -15,6 +15,15 @@ Aplicacion de escritorio hibrida para auditar, ingestar, extraer e indexar docum
 
 Los ejecutables de Windows se publican en [GitHub Releases](https://github.com/TICIANOTAUP12/Archivo-GO/releases). Cada tag `v*` dispara el workflow `.github/workflows/release.yml`, que compila la app con Wails en **64 bits (`windows-amd64`)** y **32 bits (`windows-386`)**, y adjunta un `.exe` y un `.zip` por arquitectura.
 
+### Arquitectura híbrida (v0.3+)
+
+| Modo | Dónde | Uso |
+|------|-------|-----|
+| **Docker** | Win10/11 | Backend FastAPI + PostgreSQL (monolito actual) |
+| **Local** | Win7 32-bit | Motor Go + SQLite en `:8090`, gateway IA stateless en VPS |
+| **Gateway** | VPS | Solo `/v1/extract`, `/v1/embed` — sin DB ni archivos. Ver `docs/GATEWAY-DEPLOY.md` |
+
+
 | PC del cliente | Descargar |
 |---|---|
 | Windows 10/11 de 64 bits | `ArchivoScivoliGNC-*-windows-amd64.exe` |

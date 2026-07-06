@@ -64,7 +64,8 @@ jobs:
           $suffix = "${{ matrix.artifact_suffix }}"
           $exeName = "ArchivoScivoliGNC-$version-$suffix.exe"
           Copy-Item build\bin\ArchivoScivoliGNC.exe "artifacts\$exeName"
-          Compress-Archive -Path "artifacts\$exeName" -DestinationPath "artifacts\ArchivoScivoliGNC-$version-$suffix.zip"
+          Copy-Item docs\manual-de-uso.html "artifacts\manual-de-uso.html"
+          Compress-Archive -Path "artifacts\$exeName", "artifacts\manual-de-uso.html" -DestinationPath "artifacts\ArchivoScivoliGNC-$version-$suffix.zip"
 
       - name: Upload release artifacts
         uses: actions/upload-artifact@v4

@@ -138,17 +138,17 @@ func (service *Service) loadPageTexts(filePath string, audit models.FileAudit) (
 		if err != nil {
 			return nil, err
 		}
-		hasEnoughText := false
-		for _, text := range nativeTexts {
-			if len(strings.TrimSpace(text)) >= 40 {
-				hasEnoughText = true
-				break
-			}
-		}
-		if hasEnoughText && !audit.IsProbablyScanned {
+		if !ocr.ShouldOCRPDF(nativeTexts, audit.IsProbablyScanned) {
 			return nativeTexts, nil
 		}
-		return nativeTexts, nil
+		if !service.ocrEngine.PopplerAvailable() || !service.ocrEngine.TesseractAvailable() {
+			return nativeTexts, nil
+		}
+		ocrTexts, err := service.ocrEngine.OCRPDFPages(filePath, len(nativeTexts))
+		if err != nil {
+			return nativeTexts, nil
+		}
+		return ocr.MergePageTexts(nativeTexts, ocrTexts), nil
 	}
 	if service.ocrEngine.Available() {
 		text, err := service.ocrEngine.OCRImage(filePath)

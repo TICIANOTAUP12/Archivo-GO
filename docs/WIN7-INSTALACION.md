@@ -26,18 +26,32 @@ ArchivoScivoliGNC/
   tesseract/
     tesseract.exe
     tessdata/spa.traineddata
+  poppler/
+    pdftoppm.exe
+    (DLLs de Poppler en la misma carpeta)
 ```
 
 Ejecutar el `.exe` **desde esa carpeta** (no mover solo el exe).
 
-## OCR local (Tesseract)
+## OCR local (Tesseract + Poppler)
 
-Si la carpeta `tesseract/` no viene en el zip, instalá Tesseract 32-bit y copiá:
+Para **imágenes** hace falta Tesseract. Para **PDF escaneados** también Poppler (`pdftoppm`).
+
+Si las carpetas no vienen en el zip:
+
+### Tesseract (texto en imágenes)
 
 1. `tesseract.exe` → `tesseract/tesseract.exe`
 2. `spa.traineddata` → `tesseract/tessdata/spa.traineddata`
 
-Fuente recomendada: [UB Mannheim Tesseract](https://github.com/UB-Mannheim/tesseract/wiki) (versión 32-bit).
+Fuente: [UB Mannheim Tesseract](https://github.com/UB-Mannheim/tesseract/wiki) (32-bit).
+
+### Poppler (PDF escaneado → imagen → OCR)
+
+1. Descargar release **win32** de [poppler-windows](https://github.com/oschwartz10612/poppler-windows/releases)
+2. Copiar `pdftoppm.exe` y **todas las DLL** del `bin/` a `poppler/`
+
+Sin Poppler, los PDF con texto nativo funcionan; los escaneados quedan sin texto hasta instalarlo.
 
 ## Opción B — Instalación manual de WebView2 109
 
