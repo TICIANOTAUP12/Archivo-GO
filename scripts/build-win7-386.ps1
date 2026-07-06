@@ -39,7 +39,7 @@ try {
         "github.com/wailsapp/wails/v2@v2.8.1"
         "github.com/wailsapp/go-webview2@v1.0.10"
         "github.com/google/uuid@v1.6.0"
-        "github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8"
+        "github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2507a12d80"
         "modernc.org/sqlite@v1.23.1"
         "modernc.org/libc@v1.22.5"
         "golang.org/x/sys@v0.15.0"
@@ -48,11 +48,11 @@ try {
     foreach ($package in $win7Packages) {
         go1.20.14 get $package
     }
-    go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
-    go1.20.14 mod edit -require=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
+    go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2507a12d80
+    go1.20.14 mod edit -require=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2507a12d80
     go1.20.14 mod tidy
-    go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
-    go1.20.14 mod edit -require=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2c9d06a3b8
+    go1.20.14 mod edit -replace=github.com/ledongthuc/pdf=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2507a12d80
+    go1.20.14 mod edit -require=github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2507a12d80
 
     # Wails bindings invoke `go` from PATH; shim Go 1.20 so module resolution matches the build compiler.
     $go120Exe = (Get-Command go1.20.14).Source
