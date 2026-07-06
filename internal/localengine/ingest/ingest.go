@@ -153,11 +153,13 @@ func (service *Service) loadPageTexts(filePath string, audit models.FileAudit) (
 	if service.ocrEngine.Available() {
 		text, err := service.ocrEngine.OCRImage(filePath)
 		if err != nil {
-			return []string{""}, nil
+			return nil, fmt.Errorf("OCR de imagen falló (%s): %w", filepath.Base(filePath), err)
 		}
 		return []string{text}, nil
 	}
-	return []string{""}, nil
+	return nil, fmt.Errorf(
+		"OCR no disponible: colocá tesseract/tesseract.exe y tessdata/spa.traineddata junto al .exe (ver LEEME-OCR.txt)",
+	)
 }
 
 func archiveOriginalFile(sourceFile string, loadSettings func() (settings.WorkspaceSettings, error)) (string, error) {

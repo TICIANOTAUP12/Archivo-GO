@@ -1,5 +1,18 @@
 # Changelog
 
+## v0.1.11 — 2026-07-06
+
+Fixes Win7: gateway token, modo local automático, OCR imágenes con error claro.
+
+### Cambios
+
+- **Auto-migración a modo local** en Win7 cuando Docker no existe.
+- **Gateway token**: prueba real con `/v1/extract` (no solo `/health`).
+- Campo token visible (texto) para pegar en Win7; obligatorio si el gateway lo exige.
+- **Carga** recarga URL/token desde disco; no borra gateway al guardar carpetas.
+- **OCR imágenes**: error explícito si falta Tesseract (antes fallaba en silencio).
+- Script `test-gateway-connection.ps1` para validar URL + token.
+
 ## v0.1.10 — 2026-07-06
 
 Motor local Win7 + gateway IA stateless.

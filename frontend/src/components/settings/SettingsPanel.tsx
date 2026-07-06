@@ -92,6 +92,11 @@ export function SettingsPanel() {
           <strong>Docker</strong> para Win10/11 con Docker Desktop. <strong>Local</strong> para Win7: motor SQLite en
           esta PC + gateway IA remoto.
         </p>
+        {!isLocalMode && serviceStatus?.dockerAvailable === false ? (
+          <p className="inlineHint warningHint">
+            Docker no está disponible en esta PC. Elegí <strong>Motor local SQLite (Win7)</strong> y guardá.
+          </p>
+        ) : null}
         <label>
           Modo
           <select
@@ -124,20 +129,27 @@ export function SettingsPanel() {
             <input
               value={settings.gatewayUrl}
               onChange={(event) => setGatewayUrl(event.target.value)}
-              placeholder="https://gateway.tudominio.com"
+              placeholder="http://100.x.x.x:8091"
               autoComplete="off"
             />
           </label>
+          <p className="inlineHint">
+            No confundir con &quot;URL del backend local&quot; (esa es <code>http://127.0.0.1:8090</code>).
+          </p>
           <label>
-            Token del gateway (opcional)
+            Token del gateway (obligatorio)
             <input
-              type="password"
+              type="text"
               value={settings.gatewayToken}
               onChange={(event) => setGatewayToken(event.target.value)}
-              placeholder="X-Gateway-Token del VPS"
+              placeholder="fISfpkDcl5bWmll4cJxzrAnsAY90Eyq5"
               autoComplete="off"
+              spellCheck={false}
             />
           </label>
+          <p className="inlineHint">
+            Pegá el token completo sin espacios. En Win7 usá Ctrl+V dentro del campo.
+          </p>
           <button type="button" className="secondary" disabled={isTestingGateway} onClick={() => void handleTestGateway()}>
             {isTestingGateway ? 'Probando gateway...' : 'Probar gateway'}
           </button>

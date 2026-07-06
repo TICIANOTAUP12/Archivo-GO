@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/fs"
 	"net/http"
 	"net/url"
@@ -62,9 +63,23 @@ func NewApp() *App {
 func (app *App) Startup(ctx context.Context) {
 	app.ctx = ctx
 	_ = ensureDefaultWorkspaceSettings()
+	_ = app.persistDeploymentMigration()
 	go func() {
 		_ = app.StartServices()
 	}()
+}
+
+func (app *App) persistDeploymentMigration() error {
+	settings, err := loadWorkspaceSettings()
+	if err != nil {
+		return err
+	}
+	migrated := migrateLegacyDeploymentSettings(settings)
+	migrated = normalizeWorkspaceSettings(migrated)
+	if migrated.DeploymentMode == settings.DeploymentMode && migrated.BackendURL == settings.BackendURL {
+		return nil
+	}
+	return saveWorkspaceSettings(migrated)
 }
 
 func (app *App) Shutdown(ctx context.Context) {
@@ -76,6 +91,7 @@ func (app *App) StartServices() error {
 	if err != nil {
 		return err
 	}
+	settings = normalizeWorkspaceSettings(settings)
 	if err := ensureWorkspaceDirectories(settings); err != nil {
 		return err
 	}
@@ -83,6 +99,12 @@ func (app *App) StartServices() error {
 		return startLocalEngine(settings)
 	}
 	if !isDockerAvailable() {
+		if usesLocalDockerBackend(settings.BackendURL) {
+			settings.DeploymentMode = "local"
+			settings.BackendURL = "http://" + settings.LocalEngineListenAddress
+			_ = saveWorkspaceSettings(settings)
+			return startLocalEngine(settings)
+		}
 		return nil
 	}
 	if err := runCommandWithSettings(settings, "docker", "compose", "up", "-d"); err != nil {
@@ -188,24 +210,52 @@ func (app *App) TestGatewayConnection() error {
 	if err != nil {
 		return err
 	}
-	if strings.TrimSpace(settings.GatewayURL) == "" {
+	gatewayURL := normalizeBackendURL(settings.GatewayURL)
+	if strings.TrimSpace(gatewayURL) == "" {
 		return errors.New("gateway URL is required")
 	}
-	request, err := http.NewRequest(http.MethodGet, normalizeBackendURL(settings.GatewayURL)+"/health", nil)
+	token := strings.TrimSpace(settings.GatewayToken)
+
+	healthRequest, err := http.NewRequest(http.MethodGet, gatewayURL+"/health", nil)
 	if err != nil {
 		return err
 	}
-	if strings.TrimSpace(settings.GatewayToken) != "" {
-		request.Header.Set("X-Gateway-Token", strings.TrimSpace(settings.GatewayToken))
+	client := http.Client{Timeout: 15 * time.Second}
+	healthResponse, err := client.Do(healthRequest)
+	if err != nil {
+		return fmt.Errorf("no se pudo conectar al gateway: %w", err)
 	}
-	client := http.Client{Timeout: 10 * time.Second}
-	response, err := client.Do(request)
+	healthResponse.Body.Close()
+	if healthResponse.StatusCode >= 300 {
+		return fmt.Errorf("gateway health status %d", healthResponse.StatusCode)
+	}
+
+	payload, err := json.Marshal(map[string]string{
+		"text":     "Patente TEST123",
+		"provider": "local",
+	})
 	if err != nil {
 		return err
 	}
-	defer response.Body.Close()
-	if response.StatusCode >= 300 {
-		return fmt.Errorf("gateway health status %d", response.StatusCode)
+	probeRequest, err := http.NewRequest(http.MethodPost, gatewayURL+"/v1/extract", bytes.NewReader(payload))
+	if err != nil {
+		return err
+	}
+	probeRequest.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		probeRequest.Header.Set("X-Gateway-Token", token)
+	}
+	probeResponse, err := client.Do(probeRequest)
+	if err != nil {
+		return fmt.Errorf("gateway probe failed: %w", err)
+	}
+	defer probeResponse.Body.Close()
+	if probeResponse.StatusCode == http.StatusUnauthorized {
+		return errors.New("token del gateway inválido o vacío (copiá el token completo y guardá configuración)")
+	}
+	if probeResponse.StatusCode >= 300 {
+		body, _ := io.ReadAll(probeResponse.Body)
+		return fmt.Errorf("gateway probe status %d: %s", probeResponse.StatusCode, strings.TrimSpace(string(body)))
 	}
 	return nil
 }
@@ -469,6 +519,7 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 			settings.DeploymentMode = "docker"
 		}
 	}
+	settings = migrateLegacyDeploymentSettings(settings)
 	if settings.LocalEngineListenAddress == "" {
 		settings.LocalEngineListenAddress = "127.0.0.1:8090"
 	}
@@ -654,6 +705,26 @@ func pingBackend(url string) error {
 
 func isLocalDeployment(settings WorkspaceSettings) bool {
 	return strings.EqualFold(strings.TrimSpace(settings.DeploymentMode), "local")
+}
+
+func usesLocalDockerBackend(backendURL string) bool {
+	normalized := normalizeBackendURL(strings.TrimSpace(backendURL))
+	return normalized == "" || normalized == "http://localhost:8080" || normalized == "http://127.0.0.1:8080"
+}
+
+func migrateLegacyDeploymentSettings(settings WorkspaceSettings) WorkspaceSettings {
+	if isDockerAvailable() || isLocalDeployment(settings) {
+		return settings
+	}
+	if !usesLocalDockerBackend(settings.BackendURL) {
+		return settings
+	}
+	settings.DeploymentMode = "local"
+	if settings.LocalEngineListenAddress == "" {
+		settings.LocalEngineListenAddress = "127.0.0.1:8090"
+	}
+	settings.BackendURL = "http://" + settings.LocalEngineListenAddress
+	return settings
 }
 
 func startLocalEngine(settings WorkspaceSettings) error {

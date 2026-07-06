@@ -5,6 +5,7 @@ import {
   getWorkspaceSettings,
   saveWorkspaceSettings,
   selectNativeDirectory,
+  startNativeServices,
   type DeploymentMode,
   type WorkspaceSettings,
 } from '../api/native';
@@ -36,6 +37,7 @@ type UseWorkspaceSettingsResult = {
   selectInputPath: () => Promise<void>;
   selectStoragePath: () => Promise<void>;
   persistSettings: () => Promise<void>;
+  reloadSettings: () => Promise<void>;
 };
 
 const emptySettings: WorkspaceSettings = {
@@ -176,10 +178,20 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettingsError(null);
     setSettingsMessage(null);
     try {
-      await saveWorkspaceSettings(settings);
-      setBackendBaseUrl(settings.backendUrl);
+      const latestOnDisk = await getWorkspaceSettings().catch(() => null);
+      const mergedSettings: WorkspaceSettings = {
+        ...emptySettings,
+        ...(latestOnDisk ?? {}),
+        ...settings,
+      };
+      await saveWorkspaceSettings(mergedSettings);
+      setSettings(mergedSettings);
+      setBackendBaseUrl(mergedSettings.backendUrl);
+      if (mergedSettings.deploymentMode === 'local') {
+        await startNativeServices().catch(() => undefined);
+      }
       const serviceStatus = await getNativeServiceStatus();
-      if (settings.deploymentMode === 'local') {
+      if (mergedSettings.deploymentMode === 'local') {
         setSettingsMessage('Configuración guardada. Motor local SQLite activo.');
         return;
       }
@@ -193,6 +205,10 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     } finally {
       setIsSavingSettings(false);
     }
+  }
+
+  async function reloadSettings(): Promise<void> {
+    await loadSettings();
   }
 
   async function loadSettings(): Promise<void> {
@@ -234,5 +250,6 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     selectInputPath,
     selectStoragePath,
     persistSettings,
+    reloadSettings,
   };
 }

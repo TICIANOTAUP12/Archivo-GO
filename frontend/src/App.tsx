@@ -69,7 +69,11 @@ function App() {
               </p>
             </div>
             <section className="grid">
-              <IngestionPanel isBackendReady={isBackendReady} onIngestComplete={refreshRecentDocuments} />
+              <IngestionPanel
+                isBackendReady={isBackendReady}
+                onIngestComplete={refreshRecentDocuments}
+                onRetryBackend={retryBackend}
+              />
               <RecentDocuments
                 documents={recentDocuments}
                 isRefreshing={isRefreshing}
