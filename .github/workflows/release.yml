@@ -77,6 +77,7 @@ jobs:
   build-windows-win7:
     name: Build Windows 7 desktop app (386)
     runs-on: windows-latest
+    continue-on-error: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -118,6 +119,7 @@ jobs:
   publish-release:
     name: Publish GitHub Release
     needs: [build-windows, build-windows-win7]
+    if: ${{ !cancelled() && needs.build-windows.result == 'success' }}
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts

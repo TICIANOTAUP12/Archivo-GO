@@ -40,8 +40,8 @@ try {
         "github.com/wailsapp/go-webview2@v1.0.10"
         "github.com/google/uuid@v1.6.0"
         "github.com/ledongthuc/pdf@v0.0.0-20220302134840-0c2507a12d80"
-        "modernc.org/sqlite@v1.23.1"
-        "modernc.org/libc@v1.22.5"
+        "modernc.org/sqlite@v1.18.2"
+        "modernc.org/libc@v1.18.0"
         "golang.org/x/sys@v0.15.0"
         "golang.org/x/text@v0.14.0"
     )
@@ -64,6 +64,9 @@ try {
     Copy-Item $go120Exe (Join-Path $shimDir "go.exe") -Force
     $env:PATH = "$shimDir;$env:PATH"
     Write-Host "Using Go shim: $(go version)"
+
+    $env:GO386 = "387"
+    $env:CGO_ENABLED = "0"
 
     go1.20.14 install github.com/wailsapp/wails/v2/cmd/wails@v2.8.1
     $wails = Join-Path (go1.20.14 env GOPATH) "bin\wails.exe"
