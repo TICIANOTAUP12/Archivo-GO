@@ -5,6 +5,7 @@ import {
   getWorkspaceSettings,
   saveWorkspaceSettings,
   selectNativeDirectory,
+  type DeploymentMode,
   type WorkspaceSettings,
 } from '../api/native';
 
@@ -15,12 +16,18 @@ type UseWorkspaceSettingsResult = {
   settingsError: string | null;
   setInputPath: (path: string) => void;
   setStoragePath: (path: string) => void;
+  setDeploymentMode: (mode: DeploymentMode) => void;
+  setGatewayUrl: (url: string) => void;
+  setGatewayToken: (token: string) => void;
   setDefaultProvider: (provider: WorkspaceSettings['defaultProvider']) => void;
   setGoogleApiKey: (apiKey: string) => void;
   setGoogleModel: (model: string) => void;
   setGoogleEmbeddingModel: (model: string) => void;
   setAnthropicApiKey: (apiKey: string) => void;
   setAnthropicModel: (model: string) => void;
+  setOpenAIApiKey: (apiKey: string) => void;
+  setOpenAIModel: (model: string) => void;
+  setOpenAIEmbeddingModel: (model: string) => void;
   setEmbeddingProvider: (provider: WorkspaceSettings['embeddingProvider']) => void;
   setEnableAnthropicFallback: (isEnabled: boolean) => void;
   setMinExtractionConfidence: (confidence: number) => void;
@@ -33,6 +40,10 @@ type UseWorkspaceSettingsResult = {
 
 const emptySettings: WorkspaceSettings = {
   backendUrl: 'http://localhost:8080',
+  gatewayUrl: '',
+  gatewayToken: '',
+  deploymentMode: 'docker',
+  localEngineListenAddress: '127.0.0.1:8090',
   inputPath: '',
   storagePath: '',
   defaultProvider: 'google',
@@ -41,6 +52,9 @@ const emptySettings: WorkspaceSettings = {
   googleEmbeddingModel: 'gemini-embedding-001',
   anthropicApiKey: '',
   anthropicModel: 'claude-haiku-4-5',
+  openaiApiKey: '',
+  openaiModel: 'gpt-4o-mini',
+  openaiEmbeddingModel: 'text-embedding-3-small',
   embeddingProvider: 'local',
   enableAnthropicFallback: true,
   minExtractionConfidence: 0.82,
@@ -65,6 +79,22 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     setSettings((currentSettings) => ({ ...currentSettings, storagePath: path }));
   }
 
+  function setDeploymentMode(mode: DeploymentMode): void {
+    setSettings((currentSettings) => ({
+      ...currentSettings,
+      deploymentMode: mode,
+      backendUrl: mode === 'local' ? `http://${currentSettings.localEngineListenAddress || '127.0.0.1:8090'}` : currentSettings.backendUrl,
+    }));
+  }
+
+  function setGatewayUrl(url: string): void {
+    setSettings((currentSettings) => ({ ...currentSettings, gatewayUrl: url }));
+  }
+
+  function setGatewayToken(token: string): void {
+    setSettings((currentSettings) => ({ ...currentSettings, gatewayToken: token }));
+  }
+
   function setDefaultProvider(provider: WorkspaceSettings['defaultProvider']): void {
     setSettings((currentSettings) => ({ ...currentSettings, defaultProvider: provider }));
   }
@@ -87,6 +117,18 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
 
   function setAnthropicModel(model: string): void {
     setSettings((currentSettings) => ({ ...currentSettings, anthropicModel: model }));
+  }
+
+  function setOpenAIApiKey(apiKey: string): void {
+    setSettings((currentSettings) => ({ ...currentSettings, openaiApiKey: apiKey }));
+  }
+
+  function setOpenAIModel(model: string): void {
+    setSettings((currentSettings) => ({ ...currentSettings, openaiModel: model }));
+  }
+
+  function setOpenAIEmbeddingModel(model: string): void {
+    setSettings((currentSettings) => ({ ...currentSettings, openaiEmbeddingModel: model }));
   }
 
   function setEmbeddingProvider(provider: WorkspaceSettings['embeddingProvider']): void {
@@ -137,6 +179,10 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
       await saveWorkspaceSettings(settings);
       setBackendBaseUrl(settings.backendUrl);
       const serviceStatus = await getNativeServiceStatus();
+      if (settings.deploymentMode === 'local') {
+        setSettingsMessage('Configuración guardada. Motor local SQLite activo.');
+        return;
+      }
       if (serviceStatus && serviceStatus.dockerAvailable === false) {
         setSettingsMessage('Carpetas guardadas correctamente.');
         return;
@@ -153,7 +199,7 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     try {
       const loadedSettings = await getWorkspaceSettings();
       if (loadedSettings) {
-        setSettings(loadedSettings);
+        setSettings({ ...emptySettings, ...loadedSettings });
         setBackendBaseUrl(loadedSettings.backendUrl);
       }
     } catch {
@@ -168,12 +214,18 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
     settingsError,
     setInputPath,
     setStoragePath,
+    setDeploymentMode,
+    setGatewayUrl,
+    setGatewayToken,
     setDefaultProvider,
     setGoogleApiKey,
     setGoogleModel,
     setGoogleEmbeddingModel,
     setAnthropicApiKey,
     setAnthropicModel,
+    setOpenAIApiKey,
+    setOpenAIModel,
+    setOpenAIEmbeddingModel,
     setEmbeddingProvider,
     setEnableAnthropicFallback,
     setMinExtractionConfidence,

@@ -95,6 +95,24 @@ try {
     Copy-Item (Join-Path $repoRoot "docs\WIN7-INSTALACION.md") (Join-Path $bundleDir "LEEME-WIN7.txt") -Force
     Copy-Item (Join-Path $repoRoot "docs\manual-de-uso.html") (Join-Path $bundleDir "manual-de-uso.html") -Force
 
+    $dataDir = Join-Path $bundleDir "data"
+    New-Item -ItemType Directory -Force -Path $dataDir | Out-Null
+    Set-Content (Join-Path $dataDir ".gitkeep") "" -Encoding ascii
+
+    $tesseractSource = Join-Path $repoRoot "third_party\tesseract-win32"
+    $tesseractTarget = Join-Path $bundleDir "tesseract"
+    if (Test-Path (Join-Path $tesseractSource "tesseract.exe")) {
+        Copy-Item $tesseractSource $tesseractTarget -Recurse -Force
+        Write-Host "Bundled Tesseract x86 from third_party/tesseract-win32"
+    } else {
+        New-Item -ItemType Directory -Force -Path (Join-Path $tesseractTarget "tessdata") | Out-Null
+        @(
+            "Colocá tesseract.exe y tessdata/spa.traineddata aquí para OCR local."
+            "Ver docs/WIN7-INSTALACION.md"
+        ) | Set-Content (Join-Path $tesseractTarget "LEEME-OCR.txt") -Encoding UTF8
+        Write-Host "Tesseract not found in third_party/tesseract-win32 — added LEEME-OCR.txt placeholder"
+    }
+
     New-Item -ItemType Directory -Force -Path $OutputDir | Out-Null
     $zipName = "ArchivoScivoliGNC-$version-windows-386-win7.zip"
     if (Test-Path (Join-Path $OutputDir $zipName)) {

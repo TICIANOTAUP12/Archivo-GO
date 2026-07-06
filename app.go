@@ -17,6 +17,8 @@ import (
 	"strings"
 	"time"
 
+	"archivo-digital-inteligente/internal/localengine"
+	"archivo-digital-inteligente/internal/localengine/settings"
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
@@ -32,6 +34,10 @@ type ServiceStatus struct {
 
 type WorkspaceSettings struct {
 	BackendURL                string  `json:"backendUrl"`
+	GatewayURL                string  `json:"gatewayUrl"`
+	GatewayToken              string  `json:"gatewayToken"`
+	DeploymentMode            string  `json:"deploymentMode"`
+	LocalEngineListenAddress  string  `json:"localEngineListenAddress"`
 	InputPath               string  `json:"inputPath"`
 	StoragePath             string  `json:"storagePath"`
 	DefaultProvider         string  `json:"defaultProvider"`
@@ -40,6 +46,9 @@ type WorkspaceSettings struct {
 	GoogleEmbeddingModel    string  `json:"googleEmbeddingModel"`
 	AnthropicAPIKey         string  `json:"anthropicApiKey"`
 	AnthropicModel          string  `json:"anthropicModel"`
+	OpenAIAPIKey            string  `json:"openaiApiKey"`
+	OpenAIModel             string  `json:"openaiModel"`
+	OpenAIEmbeddingModel    string  `json:"openaiEmbeddingModel"`
 	EmbeddingProvider       string  `json:"embeddingProvider"`
 	EnableAnthropicFallback bool    `json:"enableAnthropicFallback"`
 	MinExtractionConfidence float64 `json:"minExtractionConfidence"`
@@ -63,16 +72,18 @@ func (app *App) Shutdown(ctx context.Context) {
 }
 
 func (app *App) StartServices() error {
-	if !isDockerAvailable() {
-		return nil
-	}
-
 	settings, err := loadWorkspaceSettings()
 	if err != nil {
 		return err
 	}
 	if err := ensureWorkspaceDirectories(settings); err != nil {
 		return err
+	}
+	if isLocalDeployment(settings) {
+		return startLocalEngine(settings)
+	}
+	if !isDockerAvailable() {
+		return nil
 	}
 	if err := runCommandWithSettings(settings, "docker", "compose", "up", "-d"); err != nil {
 		return err
@@ -124,6 +135,10 @@ func (app *App) SaveWorkspaceSettings(settings WorkspaceSettings) error {
 	if err := saveWorkspaceSettings(settings); err != nil {
 		return err
 	}
+	if isLocalDeployment(settings) {
+		_ = localengine.Stop()
+		return startLocalEngine(settings)
+	}
 	if !isDockerAvailable() {
 		return nil
 	}
@@ -165,12 +180,44 @@ func (app *App) ServiceStatus() ServiceStatus {
 	dockerAvailable := isDockerAvailable()
 	if err := pingBackend(healthURL); err != nil {
 		message := err.Error()
-		if !dockerAvailable {
-			message = "Backend no disponible en esta PC. Windows 7 no soporta Docker: el procesamiento corre en una PC con Windows 10/11 + Docker Desktop. Esta app abre la interfaz y guarda carpetas."
+		if settingsErr == nil && isLocalDeployment(settings) {
+			message = "Motor local no disponible. Verificá que la app tenga permisos y que el puerto 8090 esté libre."
+		} else if !dockerAvailable {
+			message = "Backend no disponible. En Windows 7 usá modo local (motor SQLite + gateway IA). Configurá gateway URL en IA."
 		}
 		return ServiceStatus{BackendReady: false, Message: message, DockerAvailable: dockerAvailable}
 	}
+	if settingsErr == nil && isLocalDeployment(settings) {
+		return ServiceStatus{BackendReady: true, Message: "Motor local activo (SQLite)", DockerAvailable: dockerAvailable}
+	}
 	return ServiceStatus{BackendReady: true, Message: "Backend disponible", DockerAvailable: dockerAvailable}
+}
+
+func (app *App) TestGatewayConnection() error {
+	settings, err := loadWorkspaceSettings()
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(settings.GatewayURL) == "" {
+		return errors.New("gateway URL is required")
+	}
+	request, err := http.NewRequest(http.MethodGet, normalizeBackendURL(settings.GatewayURL)+"/health", nil)
+	if err != nil {
+		return err
+	}
+	if strings.TrimSpace(settings.GatewayToken) != "" {
+		request.Header.Set("X-Gateway-Token", strings.TrimSpace(settings.GatewayToken))
+	}
+	client := http.Client{Timeout: 10 * time.Second}
+	response, err := client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode >= 300 {
+		return fmt.Errorf("gateway health status %d", response.StatusCode)
+	}
+	return nil
 }
 
 func (app *App) OpenFile(path string) error {
@@ -404,7 +451,9 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 		settings.GoogleModel == "" &&
 		settings.GoogleEmbeddingModel == "" &&
 		settings.AnthropicModel == "" &&
+		settings.OpenAIModel == "" &&
 		settings.EmbeddingProvider == "" &&
+		settings.DeploymentMode == "" &&
 		settings.MinExtractionConfidence == 0 &&
 		settings.MaxRunBudgetUSD == 0
 
@@ -423,6 +472,25 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 	if settings.EmbeddingProvider == "" {
 		settings.EmbeddingProvider = "local"
 	}
+	if settings.DeploymentMode == "" {
+		if !isDockerAvailable() {
+			settings.DeploymentMode = "local"
+		} else {
+			settings.DeploymentMode = "docker"
+		}
+	}
+	if settings.LocalEngineListenAddress == "" {
+		settings.LocalEngineListenAddress = "127.0.0.1:8090"
+	}
+	if isLocalDeployment(settings) && (settings.BackendURL == "" || settings.BackendURL == "http://localhost:8080") {
+		settings.BackendURL = "http://" + settings.LocalEngineListenAddress
+	}
+	if settings.OpenAIModel == "" {
+		settings.OpenAIModel = "gpt-4o-mini"
+	}
+	if settings.OpenAIEmbeddingModel == "" {
+		settings.OpenAIEmbeddingModel = "text-embedding-3-small"
+	}
 	if settings.MinExtractionConfidence == 0 {
 		settings.MinExtractionConfidence = 0.82
 	}
@@ -440,6 +508,9 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 	}
 	settings.GoogleAPIKey = strings.TrimSpace(settings.GoogleAPIKey)
 	settings.AnthropicAPIKey = strings.TrimSpace(settings.AnthropicAPIKey)
+	settings.OpenAIAPIKey = strings.TrimSpace(settings.OpenAIAPIKey)
+	settings.GatewayURL = strings.TrimSpace(settings.GatewayURL)
+	settings.GatewayToken = strings.TrimSpace(settings.GatewayToken)
 	return settings
 }
 
@@ -461,6 +532,7 @@ func workspaceSettingsEnv(settings WorkspaceSettings) []string {
 		env = append(env, "GOOGLE_API_KEY="+settings.GoogleAPIKey)
 	}
 	env = append(env, "ANTHROPIC_API_KEY="+settings.AnthropicAPIKey)
+	env = append(env, "OPENAI_API_KEY="+settings.OpenAIAPIKey)
 	return env
 }
 
@@ -479,6 +551,12 @@ func validateWorkspaceSettings(settings WorkspaceSettings) error {
 			return errors.New("backend URL must be a valid http or https address")
 		}
 	}
+	if settings.GatewayURL != "" {
+		parsedGateway, err := url.ParseRequestURI(normalizeBackendURL(settings.GatewayURL))
+		if err != nil || parsedGateway.Host == "" {
+			return errors.New("gateway URL must be a valid http or https address")
+		}
+	}
 	if settings.InputPath == "" {
 		return errors.New("input path is required")
 	}
@@ -488,11 +566,14 @@ func validateWorkspaceSettings(settings WorkspaceSettings) error {
 	if filepath.Clean(settings.InputPath) == filepath.Clean(settings.StoragePath) {
 		return errors.New("input and storage paths must be different")
 	}
-	if !isAllowedProvider(settings.DefaultProvider, []string{"google", "anthropic", "local"}) {
-		return errors.New("default provider must be google, anthropic or local")
+	if !isAllowedProvider(settings.DefaultProvider, []string{"google", "anthropic", "openai", "local"}) {
+		return errors.New("default provider must be google, anthropic, openai or local")
 	}
-	if !isAllowedProvider(settings.EmbeddingProvider, []string{"google", "local"}) {
-		return errors.New("embedding provider must be google or local")
+	if !isAllowedProvider(settings.EmbeddingProvider, []string{"google", "openai", "local"}) {
+		return errors.New("embedding provider must be google, openai or local")
+	}
+	if !isAllowedProvider(settings.DeploymentMode, []string{"docker", "local"}) {
+		return errors.New("deployment mode must be docker or local")
 	}
 	if settings.MinExtractionConfidence <= 0 || settings.MinExtractionConfidence > 1 {
 		return errors.New("minimum extraction confidence must be between 0 and 1")
@@ -573,4 +654,55 @@ func pingBackend(url string) error {
 		return fmt.Errorf("backend status %d", response.StatusCode)
 	}
 	return nil
+}
+
+func isLocalDeployment(settings WorkspaceSettings) bool {
+	return strings.EqualFold(strings.TrimSpace(settings.DeploymentMode), "local")
+}
+
+func startLocalEngine(settings WorkspaceSettings) error {
+	appRoot, err := appRootDir()
+	if err != nil {
+		return err
+	}
+	dataDir := filepath.Join(appRoot, "data")
+	return localengine.Start(localengine.Config{
+		DataDir:       dataDir,
+		AppRoot:       appRoot,
+		ListenAddress: settings.LocalEngineListenAddress,
+		LoadSettings:  loadLocalEngineSettings,
+	})
+}
+
+func loadLocalEngineSettings() (settings.WorkspaceSettings, error) {
+	workspaceSettings, err := loadWorkspaceSettings()
+	if err != nil {
+		return settings.WorkspaceSettings{}, err
+	}
+	return mapWorkspaceToLocalEngineSettings(workspaceSettings), nil
+}
+
+func mapWorkspaceToLocalEngineSettings(workspace WorkspaceSettings) settings.WorkspaceSettings {
+	return settings.WorkspaceSettings{
+		BackendURL:               workspace.BackendURL,
+		GatewayURL:               workspace.GatewayURL,
+		GatewayToken:             workspace.GatewayToken,
+		DeploymentMode:           workspace.DeploymentMode,
+		InputPath:                workspace.InputPath,
+		StoragePath:              workspace.StoragePath,
+		DefaultProvider:          workspace.DefaultProvider,
+		GoogleAPIKey:             workspace.GoogleAPIKey,
+		GoogleModel:              workspace.GoogleModel,
+		GoogleEmbeddingModel:     workspace.GoogleEmbeddingModel,
+		AnthropicAPIKey:          workspace.AnthropicAPIKey,
+		AnthropicModel:           workspace.AnthropicModel,
+		OpenAIAPIKey:             workspace.OpenAIAPIKey,
+		OpenAIModel:              workspace.OpenAIModel,
+		OpenAIEmbeddingModel:     workspace.OpenAIEmbeddingModel,
+		EmbeddingProvider:        workspace.EmbeddingProvider,
+		EnableAnthropicFallback:  workspace.EnableAnthropicFallback,
+		MinExtractionConfidence:  workspace.MinExtractionConfidence,
+		MaxRunBudgetUSD:          workspace.MaxRunBudgetUSD,
+		LocalEngineListenAddress: workspace.LocalEngineListenAddress,
+	}
 }

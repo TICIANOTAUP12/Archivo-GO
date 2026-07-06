@@ -1,0 +1,20 @@
+services:
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    container_name: archivo_gateway
+    restart: unless-stopped
+    environment:
+      APP_ENV: ${APP_ENV:-production}
+      GATEWAY_TOKEN: ${GATEWAY_TOKEN:-}
+      RATE_LIMIT: ${RATE_LIMIT:-60/minute}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    ports:
+      - "8091:8091"
+    networks:
+      - gateway_net
+
+networks:
+  gateway_net:
+    driver: bridge

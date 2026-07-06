@@ -1,14 +1,23 @@
+export type DeploymentMode = 'docker' | 'local';
+
 export type WorkspaceSettings = {
   backendUrl: string;
+  gatewayUrl: string;
+  gatewayToken: string;
+  deploymentMode: DeploymentMode;
+  localEngineListenAddress: string;
   inputPath: string;
   storagePath: string;
-  defaultProvider: 'google' | 'anthropic' | 'local';
+  defaultProvider: 'google' | 'anthropic' | 'openai' | 'local';
   googleApiKey: string;
   googleModel: string;
   googleEmbeddingModel: string;
   anthropicApiKey: string;
   anthropicModel: string;
-  embeddingProvider: 'google' | 'local';
+  openaiApiKey: string;
+  openaiModel: string;
+  openaiEmbeddingModel: string;
+  embeddingProvider: 'google' | 'openai' | 'local';
   enableAnthropicFallback: boolean;
   minExtractionConfidence: number;
   maxRunBudgetUsd: number;
@@ -45,6 +54,7 @@ type NativeAppBinding = {
   SelectDirectory?: (title: string) => Promise<string>;
   ServiceStatus?: () => Promise<ServiceStatus>;
   StartServices?: () => Promise<void>;
+  TestGatewayConnection?: () => Promise<void>;
 };
 
 const desktopBridgeUnavailableMessage =
@@ -154,4 +164,12 @@ export async function startNativeServices(): Promise<void> {
     throw new Error(desktopBridgeUnavailableMessage);
   }
   await startServices();
+}
+
+export async function testGatewayConnection(): Promise<void> {
+  const testGateway = window.go?.main?.App?.TestGatewayConnection;
+  if (!testGateway) {
+    throw new Error(desktopBridgeUnavailableMessage);
+  }
+  await testGateway();
 }

@@ -20,9 +20,9 @@ class Settings(BaseSettings):
         ]
     )
 
-    default_provider: Literal["google", "anthropic", "local"] = "google"
+    default_provider: Literal["google", "anthropic", "openai", "local"] = "google"
     ocr_provider: Literal["google", "local"] = "local"
-    embedding_provider: Literal["google", "local"] = "local"
+    embedding_provider: Literal["google", "openai", "local"] = "local"
     enable_anthropic_fallback: bool = True
     min_extraction_confidence: float = 0.82
     max_run_budget_usd: float = 300.0
@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     google_embedding_model: str = "gemini-embedding-001"
     anthropic_api_key: str | None = None
     anthropic_model: str = "claude-haiku-4-5"
+    openai_api_key: str | None = None
+    openai_model: str = "gpt-4o-mini"
+    openai_embedding_model: str = "text-embedding-3-small"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

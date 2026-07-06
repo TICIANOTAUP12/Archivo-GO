@@ -44,12 +44,16 @@ export function useBackendBootstrap(): UseBackendBootstrapResult {
 
     if (await isBackendHealthy()) {
       setBackendStatus('ready');
-      setBackendMessage('Backend conectado');
+      setBackendMessage(loadedSettings?.deploymentMode === 'local' ? 'Motor local conectado' : 'Backend conectado');
       return;
     }
 
     setBackendStatus('starting');
-    setBackendMessage('Iniciando Docker y backend local...');
+    setBackendMessage(
+      loadedSettings?.deploymentMode === 'local'
+        ? 'Iniciando motor local SQLite...'
+        : 'Iniciando Docker y backend local...',
+    );
 
     try {
       await startNativeServices().catch(() => undefined);
@@ -65,7 +69,7 @@ export function useBackendBootstrap(): UseBackendBootstrapResult {
     for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt += 1) {
       if (await isBackendHealthy()) {
         setBackendStatus('ready');
-        setBackendMessage('Backend conectado');
+        setBackendMessage(loadedSettings?.deploymentMode === 'local' ? 'Motor local conectado' : 'Backend conectado');
         return;
       }
       await sleep(RETRY_DELAY_MS);
@@ -79,9 +83,15 @@ export function useBackendBootstrap(): UseBackendBootstrapResult {
     }
 
     setBackendStatus('offline');
+    if (loadedSettings?.deploymentMode === 'local') {
+      setBackendMessage(
+        'Motor local no disponible. Configurá modo local en IA, guardá, y verificá que el puerto 8090 esté libre.',
+      );
+      return;
+    }
     if (nativeStatus?.dockerAvailable === false) {
       setBackendMessage(
-        'Backend no disponible en esta PC. Windows 7 no soporta Docker: procesá documentos desde una PC con Windows 10/11 y Docker Desktop. Acá podés configurar carpetas y buscar si el backend está conectado.',
+        'Backend no disponible. En Windows 7 activá modo local en IA (SQLite + gateway remoto).',
       );
       return;
     }

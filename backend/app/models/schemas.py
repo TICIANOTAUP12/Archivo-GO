@@ -18,6 +18,7 @@ class DocumentStatus(StrEnum):
 class ProviderName(StrEnum):
     google = "google"
     anthropic = "anthropic"
+    openai = "openai"
     local = "local"
 
 

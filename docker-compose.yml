@@ -21,7 +21,8 @@ services:
 
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     container_name: archivo_backend
     restart: unless-stopped
     environment:
@@ -36,6 +37,9 @@ services:
       GOOGLE_EMBEDDING_MODEL: ${GOOGLE_EMBEDDING_MODEL:-gemini-embedding-001}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-haiku-4-5}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-4o-mini}
+      OPENAI_EMBEDDING_MODEL: ${OPENAI_EMBEDDING_MODEL:-text-embedding-3-small}
       OCR_PROVIDER: ${OCR_PROVIDER:-local}
       EMBEDDING_PROVIDER: ${EMBEDDING_PROVIDER:-local}
       HOST_INPUT_ROOT: ${HOST_INPUT_ROOT:-./data/source}

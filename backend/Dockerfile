@@ -12,14 +12,16 @@ RUN apt-get update \
 
 FROM base AS builder
 
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --prefix=/install -r requirements.txt
 
 FROM base AS runtime
 
 RUN addgroup --system app && adduser --system --ingroup app app
 COPY --from=builder /install /usr/local
-COPY app ./app
+COPY shared /app/shared
+COPY backend/app ./app
+ENV PYTHONPATH=/app
 
 USER app
 EXPOSE 8080

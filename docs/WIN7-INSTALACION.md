@@ -2,6 +2,14 @@
 
 Windows 7 **no acepta** el instalador WebView2 moderno. Hay que usar la **última versión compatible: 109.x (x86)**.
 
+## Arquitectura v0.3+ (modo local)
+
+En Win7 la app usa **motor local SQLite** + **gateway IA remoto**:
+
+- PDFs e índice quedan en esta PC (`data/archivo.db`)
+- El VPS solo procesa texto (extract + embed), **no guarda archivos**
+- Configurá en **IA → Modo: Motor local SQLite** + URL del gateway + API key
+
 ## Opción A — Paquete completo (recomendado)
 
 Descargar del release:
@@ -12,13 +20,24 @@ Descomprimir **toda** la carpeta. Debe quedar así:
 
 ```text
 ArchivoScivoliGNC/
-  ArchivoScivoliGNC-0.1.3-windows-386-win7.exe
+  ArchivoScivoliGNC-0.3.0-windows-386-win7.exe
+  data/
   webview2/
-    msedgewebview2.exe
-    ... (otros archivos del runtime)
+  tesseract/
+    tesseract.exe
+    tessdata/spa.traineddata
 ```
 
 Ejecutar el `.exe` **desde esa carpeta** (no mover solo el exe).
+
+## OCR local (Tesseract)
+
+Si la carpeta `tesseract/` no viene en el zip, instalá Tesseract 32-bit y copiá:
+
+1. `tesseract.exe` → `tesseract/tesseract.exe`
+2. `spa.traineddata` → `tesseract/tessdata/spa.traineddata`
+
+Fuente recomendada: [UB Mannheim Tesseract](https://github.com/UB-Mannheim/tesseract/wiki) (versión 32-bit).
 
 ## Opción B — Instalación manual de WebView2 109
 
@@ -38,22 +57,15 @@ Si ya tenés el `.exe` suelto:
 
 - PC **32 bits** ("Equipo basado en X86" en Información del sistema).
 - Parche **KB4474419** (SHA-2) instalado en Windows 7.
-- **Docker no funciona** en Win7: el backend **no arranca en esta PC**. La interfaz sí abre; podés elegir y guardar la carpeta de origen sin error.
+- **Docker no funciona** en Win7 — usá modo **local** en IA.
 
-## Backend en Windows 7 — confirmado
+## Configuración inicial
 
-**Sí: Windows 7 no puede correr Docker.** Docker Desktop exige Windows 10/11. El backend (FastAPI + PostgreSQL) va en Docker, así que **no procesa en la PC Win7**.
-
-| Qué | Win7 | Win10/11 + Docker |
-|-----|------|-------------------|
-| Abrir la app | Sí | Sí |
-| Elegir carpetas (Carga) | Sí | Sí |
-| Auditar / procesar con IA | No (sin backend local) | Sí |
-| Buscar documentos | Solo si el backend responde en `localhost:8080` | Sí |
-
-**Arquitectura actual:** la PC Win7 del cliente es **solo interfaz**. El procesamiento pesado va en otra máquina con Docker (tu notebook, un servidor, etc.). El túnel SSH es **una opción** para conectar ambas; no es el único camino, pero hoy la app habla con `http://localhost:8080`.
-
-Si no hay backend conectado, verás "Backend offline" — es normal en Win7.
+1. Abrir app → **IA**
+2. Modo: **Motor local SQLite (Win7)**
+3. Gateway URL: `https://tu-vps:8091` (ver `docs/GATEWAY-DEPLOY.md`)
+4. API key del proveedor (Gemini, OpenAI o Claude)
+5. **Carga** → elegir carpetas origen/destino → **Procesar carpeta con IA**
 
 ## Si sigue sin abrir
 

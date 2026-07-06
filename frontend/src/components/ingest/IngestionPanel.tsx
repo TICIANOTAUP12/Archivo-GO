@@ -137,7 +137,9 @@ export function IngestionPanel({ isBackendReady, onIngestComplete }: IngestionPa
         </button>
         {!isBackendReady ? (
           <p className="inlineHint warningHint">
-            Para procesar hace falta el backend con Docker (Windows 10/11). En Windows 7 esta PC solo corre la interfaz.
+            {settings.deploymentMode === 'local'
+              ? 'Para procesar activá modo local en IA, configurá gateway URL + API key, y guardá.'
+              : 'Para procesar hace falta el backend con Docker (Windows 10/11).'}
           </p>
         ) : null}
         {!canConfigure ? (

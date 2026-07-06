@@ -158,6 +158,9 @@ func fetchLatestRelease() (githubRelease, error) {
 	}
 	defer response.Body.Close()
 
+	if response.StatusCode == http.StatusNotFound {
+		return githubRelease{}, errors.New("no se encontró release público (repo privado: hace falta internet + acceso a GitHub Releases)")
+	}
 	if response.StatusCode >= 300 {
 		return githubRelease{}, fmt.Errorf("GitHub respondió %d al buscar releases", response.StatusCode)
 	}
