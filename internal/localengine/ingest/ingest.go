@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -76,6 +77,11 @@ func (service *Service) IngestSource(ctx context.Context, request models.IngestR
 
 func (service *Service) processFiles(ctx context.Context, files []string, runID string) {
 	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Printf("ingest panic run=%s: %v", runID, recovered)
+			_ = service.repo.CompleteRun(runID, "failed")
+			return
+		}
 		_ = service.repo.CompleteRun(runID, "completed")
 	}()
 	for _, filePath := range files {

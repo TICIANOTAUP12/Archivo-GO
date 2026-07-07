@@ -3,6 +3,7 @@ package gateway
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,7 +26,14 @@ func NewClient(settings settings.WorkspaceSettings) *Client {
 	return &Client{
 		baseURL: baseURL,
 		token:   strings.TrimSpace(settings.GatewayToken),
-		http:    &http.Client{Timeout: 120 * time.Second},
+		http: &http.Client{
+			Timeout: 120 * time.Second,
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					MinVersion: tls.VersionTLS12,
+				},
+			},
+		},
 	}
 }
 

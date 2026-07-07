@@ -3,12 +3,23 @@ package pdf
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/ledongthuc/pdf"
 )
 
-func ExtractTextByPage(filePath string) ([]string, error) {
+func ExtractTextByPage(filePath string) (pages []string, err error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			pages = nil
+			err = fmt.Errorf("pdf reader crashed on %s: %v", filepath.Base(filePath), recovered)
+		}
+	}()
+	return extractTextByPage(filePath)
+}
+
+func extractTextByPage(filePath string) ([]string, error) {
 	file, reader, err := pdf.Open(filePath)
 	if err != nil {
 		return nil, fmt.Errorf("open pdf: %w", err)
@@ -37,9 +48,16 @@ func ExtractTextByPage(filePath string) ([]string, error) {
 }
 
 func InspectPDF(filePath string) (pageCount int, hasNativeText bool, err error) {
-	pages, err := ExtractTextByPage(filePath)
-	if err != nil {
-		return 0, false, err
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			pageCount = 1
+			hasNativeText = false
+			err = fmt.Errorf("pdf inspect crashed on %s: %v", filepath.Base(filePath), recovered)
+		}
+	}()
+	pages, extractErr := ExtractTextByPage(filePath)
+	if extractErr != nil {
+		return 0, false, extractErr
 	}
 	pageCount = len(pages)
 	for _, pageText := range pages {

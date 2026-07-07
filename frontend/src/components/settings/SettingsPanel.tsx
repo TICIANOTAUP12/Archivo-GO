@@ -129,12 +129,12 @@ export function SettingsPanel() {
             <input
               value={settings.gatewayUrl}
               onChange={(event) => setGatewayUrl(event.target.value)}
-              placeholder="http://100.x.x.x:8091"
+              placeholder="http://sistemataup.online/archivo-gateway"
               autoComplete="off"
             />
           </label>
           <p className="inlineHint">
-            No confundir con &quot;URL del backend local&quot; (esa es <code>http://127.0.0.1:8090</code>).
+            Win7: usar <code>http://</code> (no https). Barras normales <code>http://</code> (no <code>http:\\</code>). Backend local: <code>http://127.0.0.1:8090</code>.
           </p>
           <label>
             Token del gateway (obligatorio)

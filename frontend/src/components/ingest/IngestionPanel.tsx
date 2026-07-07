@@ -72,7 +72,7 @@ function maskGatewayUrl(url: string): string {
 }
 
 export function IngestionPanel({ isBackendReady, onIngestComplete, onRetryBackend }: IngestionPanelProps) {
-  const [sampleLimit, setSampleLimit] = useState<number>(500);
+  const [sampleLimit, setSampleLimit] = useState<number>(25);
   const [savedGatewayUrl, setSavedGatewayUrl] = useState<string>('');
   const [savedGatewayToken, setSavedGatewayToken] = useState<string>('');
   const {
@@ -244,11 +244,11 @@ export function IngestionPanel({ isBackendReady, onIngestComplete, onRetryBacken
 
       <form className="optionalAuditForm" onSubmit={handleAuditOnly}>
         <label>
-          Muestra para estimar costo (solo auditoría)
+          Muestra para estimar costo (Win7: dejar en 25 o menos)
           <input
             type="number"
             min={1}
-            max={10000}
+            max={200}
             value={sampleLimit}
             disabled={isProcessing}
             onChange={(event) => setSampleLimit(Number(event.target.value))}

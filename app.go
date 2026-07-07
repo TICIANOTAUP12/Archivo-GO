@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -220,7 +221,7 @@ func (app *App) TestGatewayConnection() error {
 	if err != nil {
 		return err
 	}
-	client := http.Client{Timeout: 15 * time.Second}
+	client := gatewayHTTPClient(15 * time.Second)
 	healthResponse, err := client.Do(healthRequest)
 	if err != nil {
 		return fmt.Errorf("no se pudo conectar al gateway: %w", err)
@@ -258,6 +259,17 @@ func (app *App) TestGatewayConnection() error {
 		return fmt.Errorf("gateway probe status %d: %s", probeResponse.StatusCode, strings.TrimSpace(string(body)))
 	}
 	return nil
+}
+
+func gatewayHTTPClient(timeout time.Duration) *http.Client {
+	return &http.Client{
+		Timeout: timeout,
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				MinVersion: tls.VersionTLS12,
+			},
+		},
+	}
 }
 
 func (app *App) OpenFile(path string) error {
@@ -550,7 +562,11 @@ func normalizeWorkspaceSettings(settings WorkspaceSettings) WorkspaceSettings {
 	settings.GoogleAPIKey = strings.TrimSpace(settings.GoogleAPIKey)
 	settings.AnthropicAPIKey = strings.TrimSpace(settings.AnthropicAPIKey)
 	settings.OpenAIAPIKey = strings.TrimSpace(settings.OpenAIAPIKey)
-	settings.GatewayURL = strings.TrimSpace(settings.GatewayURL)
+	if trimmedGateway := strings.TrimSpace(settings.GatewayURL); trimmedGateway != "" {
+		settings.GatewayURL = strings.TrimRight(normalizeBackendURL(trimmedGateway), "/")
+	} else {
+		settings.GatewayURL = ""
+	}
 	settings.GatewayToken = strings.TrimSpace(settings.GatewayToken)
 	return settings
 }
@@ -643,6 +659,7 @@ func ensureWorkspaceDirectories(settings WorkspaceSettings) error {
 
 func normalizeBackendURL(raw string) string {
 	raw = strings.TrimSpace(raw)
+	raw = strings.ReplaceAll(raw, `\`, `/`)
 	if raw == "" {
 		return "http://localhost:8080"
 	}

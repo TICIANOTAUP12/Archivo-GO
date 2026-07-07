@@ -76,7 +76,7 @@ func AuditSource(sourcePath string, sampleLimit int) (models.AuditResponse, erro
 	for _, path := range files[:sampledCount] {
 		audit, auditErr := auditFile(path)
 		if auditErr != nil {
-			return models.AuditResponse{}, auditErr
+			continue
 		}
 		sampled = append(sampled, audit)
 	}
@@ -116,11 +116,15 @@ func auditFile(path string) (models.FileAudit, error) {
 	hasNativeText := false
 	isProbablyScanned := true
 	if ext == ".pdf" {
-		pageCount, hasNativeText, err = pdf.InspectPDF(path)
-		if err != nil {
-			return models.FileAudit{}, err
+		var inspectErr error
+		pageCount, hasNativeText, inspectErr = pdf.InspectPDF(path)
+		if inspectErr != nil {
+			pageCount = 1
+			hasNativeText = false
+			isProbablyScanned = true
+		} else {
+			isProbablyScanned = !hasNativeText
 		}
-		isProbablyScanned = !hasNativeText
 	}
 	hash, err := sha256File(path)
 	if err != nil {

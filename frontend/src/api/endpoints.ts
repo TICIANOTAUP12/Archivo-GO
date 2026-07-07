@@ -6,6 +6,7 @@ export function auditSource(sourcePath: string, sampleLimit: number): Promise<Au
   return request<AuditResponse>('/audit', {
     method: 'POST',
     body: JSON.stringify({ source_path: sourcePath, sample_limit: sampleLimit }),
+    timeoutMs: 120_000,
   });
 }
 

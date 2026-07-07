@@ -1,5 +1,24 @@
 # Changelog
 
+## v0.1.13 — 2026-07-07
+
+Fixes Win7 Ecopos: gateway por HTTP, URL con barras, crash al procesar PDFs.
+
+### Cambios
+
+- **Gateway URL**: normaliza `http:\\` → `http://` al guardar y en pantalla IA.
+- **TLS 1.2** en cliente gateway (Go) para HTTPS cuando aplique.
+- **Anti-crash al procesar**: PDFs corruptos ya no tumban la app; panic recovery en motor local.
+- **Auditoría Win7**: muestra por defecto **25** archivos (antes 500); timeout 120 s.
+- **Guardar config**: si falla el guardado, no sigue con “Probar gateway” en falso.
+- Scripts VPS: `setup-gateway-http-vps.sh`, `setup-gateway-https-vps.sh`, `ecopos-test-gateway.bat`.
+
+### Ecopos — URL gateway recomendada
+
+```
+http://sistemataup.online/archivo-gateway
+```
+
 ## v0.1.12 — 2026-07-06
 
 Fix build Win7 zip en CI (GO386) para Ecopos.

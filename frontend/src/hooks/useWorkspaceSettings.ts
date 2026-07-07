@@ -90,7 +90,10 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
   }
 
   function setGatewayUrl(url: string): void {
-    setSettings((currentSettings) => ({ ...currentSettings, gatewayUrl: url }));
+    setSettings((currentSettings) => ({
+      ...currentSettings,
+      gatewayUrl: url.replace(/\\/g, '/'),
+    }));
   }
 
   function setGatewayToken(token: string): void {
@@ -201,7 +204,9 @@ export function useWorkspaceSettings(): UseWorkspaceSettingsResult {
       }
       setSettingsMessage('Carpetas y configuración guardadas. Los servicios fueron reiniciados cuando Docker está disponible.');
     } catch (error) {
-      setSettingsError(error instanceof Error ? error.message : 'No pudimos guardar la configuración.');
+      const message = error instanceof Error ? error.message : 'No pudimos guardar la configuración.';
+      setSettingsError(message);
+      throw error instanceof Error ? error : new Error(message);
     } finally {
       setIsSavingSettings(false);
     }

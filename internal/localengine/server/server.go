@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -25,12 +26,12 @@ func NewHandler(repo *repository.Repository, ingestService *ingest.Service, sear
 }
 
 func (handler *Handler) Register(mux *http.ServeMux) {
-	mux.HandleFunc("/health", handler.handleHealth)
-	mux.HandleFunc("/audit", handler.handleAudit)
-	mux.HandleFunc("/documents/ingest", handler.handleIngest)
-	mux.HandleFunc("/documents/recent", handler.handleRecentDocuments)
-	mux.HandleFunc("/documents", handler.handleDocuments)
-	mux.HandleFunc("/search", handler.handleSearch)
+	mux.HandleFunc("/health", withPanicRecovery(handler.handleHealth))
+	mux.HandleFunc("/audit", withPanicRecovery(handler.handleAudit))
+	mux.HandleFunc("/documents/ingest", withPanicRecovery(handler.handleIngest))
+	mux.HandleFunc("/documents/recent", withPanicRecovery(handler.handleRecentDocuments))
+	mux.HandleFunc("/documents", withPanicRecovery(handler.handleDocuments))
+	mux.HandleFunc("/search", withPanicRecovery(handler.handleSearch))
 }
 
 func (handler *Handler) handleHealth(responseWriter http.ResponseWriter, request *http.Request) {
@@ -153,4 +154,15 @@ func writeJSON(responseWriter http.ResponseWriter, statusCode int, payload any) 
 
 func writeError(responseWriter http.ResponseWriter, statusCode int, message string) {
 	writeJSON(responseWriter, statusCode, map[string]string{"detail": message})
+}
+
+func withPanicRecovery(next http.HandlerFunc) http.HandlerFunc {
+	return func(responseWriter http.ResponseWriter, request *http.Request) {
+		defer func() {
+			if recovered := recover(); recovered != nil {
+				writeError(responseWriter, http.StatusInternalServerError, fmt.Sprintf("motor local: %v", recovered))
+			}
+		}()
+		next(responseWriter, request)
+	}
 }
