@@ -65,8 +65,8 @@ try {
     $env:PATH = "$shimDir;$env:PATH"
     Write-Host "Using Go shim: $(go version)"
 
-    $env:GO386 = "387"
     $env:CGO_ENABLED = "0"
+    Remove-Item Env:GO386 -ErrorAction SilentlyContinue
 
     go1.20.14 install github.com/wailsapp/wails/v2/cmd/wails@v2.8.1
     $wails = Join-Path (go1.20.14 env GOPATH) "bin\wails.exe"

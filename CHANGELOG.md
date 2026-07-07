@@ -1,5 +1,14 @@
 # Changelog
 
+## v0.1.12 — 2026-07-06
+
+Fix build Win7 zip en CI (GO386) para Ecopos.
+
+### Cambios
+
+- Corregido script `build-win7-386.ps1`: quita `GO386=387` que rompía CI.
+- Release incluye zip **`windows-386-win7`** con WebView2 embebido.
+
 ## v0.1.11 — 2026-07-06
 
 Fixes Win7: gateway token, modo local automático, OCR imágenes con error claro.
