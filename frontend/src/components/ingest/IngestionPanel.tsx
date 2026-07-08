@@ -73,6 +73,7 @@ function maskGatewayUrl(url: string): string {
 
 export function IngestionPanel({ isBackendReady, onIngestComplete, onRetryBackend }: IngestionPanelProps) {
   const [sampleLimit, setSampleLimit] = useState<number>(25);
+  const [maxDocumentsPerRun, setMaxDocumentsPerRun] = useState<number>(10);
   const [savedGatewayUrl, setSavedGatewayUrl] = useState<string>('');
   const [savedGatewayToken, setSavedGatewayToken] = useState<string>('');
   const {
@@ -140,7 +141,11 @@ export function IngestionPanel({ isBackendReady, onIngestComplete, onRetryBacken
     if (!gatewayUrl) {
       return;
     }
-    await performFullProcessing(latest?.inputPath?.trim() || settings.inputPath, sampleLimit);
+    await performFullProcessing(
+      latest?.inputPath?.trim() || settings.inputPath,
+      sampleLimit,
+      maxDocumentsPerRun > 0 ? maxDocumentsPerRun : null,
+    );
   }
 
   function handleAuditOnly(event: FormEvent<HTMLFormElement>): void {
@@ -243,6 +248,17 @@ export function IngestionPanel({ isBackendReady, onIngestComplete, onRetryBacken
       {audit ? <AuditSummary audit={audit} /> : null}
 
       <form className="optionalAuditForm" onSubmit={handleAuditOnly}>
+        <label>
+          Máximo archivos por corrida (Win7: empezar con 5–10)
+          <input
+            type="number"
+            min={1}
+            max={500}
+            value={maxDocumentsPerRun}
+            disabled={isProcessing}
+            onChange={(event) => setMaxDocumentsPerRun(Number(event.target.value))}
+          />
+        </label>
         <label>
           Muestra para estimar costo (Win7: dejar en 25 o menos)
           <input

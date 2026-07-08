@@ -9,10 +9,11 @@ type ApiErrorPayload = {
 
 type RequestOptions = RequestInit & {
   timeoutMs?: number;
+  timeoutMessage?: string;
 };
 
 export async function request<TResponse>(path: string, init: RequestOptions = {}): Promise<TResponse> {
-  const { timeoutMs = 30_000, ...fetchInit } = init;
+  const { timeoutMs = 60_000, timeoutMessage, ...fetchInit } = init;
   let lastError: Error | null = null;
 
   for (let attempt = 0; attempt < MAX_NETWORK_RETRIES; attempt += 1) {
@@ -40,7 +41,7 @@ export async function request<TResponse>(path: string, init: RequestOptions = {}
         throw error;
       }
 
-      lastError = buildNetworkError(error);
+      lastError = buildNetworkError(error, timeoutMessage);
       if (attempt < MAX_NETWORK_RETRIES - 1) {
         await sleep(RETRY_DELAY_MS);
       }
@@ -57,9 +58,9 @@ function isRetryableNetworkError(error: Error): boolean {
   return true;
 }
 
-function buildNetworkError(error: unknown): Error {
+function buildNetworkError(error: unknown, timeoutMessage?: string): Error {
   if (error instanceof DOMException && error.name === 'AbortError') {
-    return new Error('La búsqueda tardó demasiado. Intentá de nuevo.');
+    return new Error(timeoutMessage ?? 'La solicitud tardó demasiado. Intentá de nuevo.');
   }
   if (error instanceof TypeError || (error instanceof Error && error.message.includes('fetch'))) {
     return new Error(

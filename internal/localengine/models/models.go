@@ -46,6 +46,7 @@ type IngestRequest struct {
 	SourcePath   string  `json:"source_path"`
 	RunID        *string `json:"run_id"`
 	MaxDocuments *int    `json:"max_documents"`
+	SampleLimit  int     `json:"sample_limit"`
 	DryRun       bool    `json:"dry_run"`
 }
 

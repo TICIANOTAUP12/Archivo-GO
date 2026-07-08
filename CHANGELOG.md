@@ -1,5 +1,17 @@
 # Changelog
 
+## v0.1.14 — 2026-07-08
+
+Fix procesamiento Win7: sin doble auditoría, lotes chicos, timeouts claros.
+
+### Cambios
+
+- **Ingesta**: reutiliza el `run_id` del audit y **no vuelve a auditar** la carpeta.
+- **Lotes Win7**: campo "Máximo archivos por corrida" (default **10**).
+- **Timeouts**: audit 120 s, ingest 180 s, biblioteca/documentos 120 s; mensajes de error por operación (ya no dice "búsqueda" al procesar).
+- **Búsqueda**: embed vía gateway con tope 15 s; si falla, usa búsqueda local.
+- **Audit API**: muestra por defecto **25** (antes 500).
+
 ## v0.1.13 — 2026-07-07
 
 Fixes Win7 Ecopos: gateway por HTTP, URL con barras, crash al procesar PDFs.

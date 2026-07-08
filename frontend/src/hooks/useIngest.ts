@@ -13,8 +13,8 @@ type UseIngestResult = {
   processingPhase: ProcessingPhase;
   error: string | null;
   performAudit: (sourcePath: string, sampleLimit: number, options?: { keepPhase?: boolean }) => Promise<AuditResponse | null>;
-  performIngest: (sourcePath: string) => Promise<IngestResponse | null>;
-  performFullProcessing: (sourcePath: string, sampleLimit: number) => Promise<void>;
+  performIngest: (sourcePath: string, runId: string | null, maxDocuments: number | null) => Promise<IngestResponse | null>;
+  performFullProcessing: (sourcePath: string, sampleLimit: number, maxDocuments: number | null) => Promise<void>;
 };
 
 export function useIngest(onIngestComplete?: () => Promise<void>): UseIngestResult {
@@ -57,7 +57,11 @@ export function useIngest(onIngestComplete?: () => Promise<void>): UseIngestResu
     }
   }
 
-  async function performIngest(sourcePath: string): Promise<IngestResponse | null> {
+  async function performIngest(
+    sourcePath: string,
+    runId: string | null,
+    maxDocuments: number | null,
+  ): Promise<IngestResponse | null> {
     const trimmedPath = sourcePath.trim();
     if (!trimmedPath) {
       setError('Ingresá una carpeta o archivo para procesar.');
@@ -69,13 +73,19 @@ export function useIngest(onIngestComplete?: () => Promise<void>): UseIngestResu
     setError(null);
 
     try {
-      const response = await ingestSource(trimmedPath, null);
+      const response = await ingestSource(trimmedPath, runId, maxDocuments);
       setIngest(response);
       setProcessingPhase('done');
       await onIngestComplete?.();
       return response;
     } catch (ingestError) {
-      setError(ingestError instanceof Error ? ingestError.message : 'No pudimos iniciar la ingesta.');
+      const message =
+        ingestError instanceof Error ? ingestError.message : 'No pudimos iniciar la ingesta.';
+      setError(
+        message.includes('abort') || message.includes('tardó demasiado')
+          ? 'La carpeta es muy grande o Win7 tardó demasiado. Probá con máximo 5–10 archivos por corrida.'
+          : message,
+      );
       return null;
     } finally {
       setIsIngesting(false);
@@ -83,7 +93,11 @@ export function useIngest(onIngestComplete?: () => Promise<void>): UseIngestResu
     }
   }
 
-  async function performFullProcessing(sourcePath: string, sampleLimit: number): Promise<void> {
+  async function performFullProcessing(
+    sourcePath: string,
+    sampleLimit: number,
+    maxDocuments: number | null,
+  ): Promise<void> {
     setProcessingPhase('auditing');
     const auditResult = await performAudit(sourcePath, sampleLimit, { keepPhase: true });
     if (!auditResult) {
@@ -97,7 +111,7 @@ export function useIngest(onIngestComplete?: () => Promise<void>): UseIngestResu
       return;
     }
 
-    await performIngest(sourcePath);
+    await performIngest(sourcePath, auditResult.run_id, maxDocuments);
   }
 
   return {

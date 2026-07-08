@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"strings"
+	"time"
 
 	"archivo-digital-inteligente/internal/localengine/gateway"
 	"archivo-digital-inteligente/internal/localengine/models"
@@ -37,9 +38,11 @@ func (service *Service) SearchDocuments(ctx context.Context, request models.Sear
 	queryEmbedding := localHashEmbedding(parsed.Query)
 	if workspaceSettings.GatewayURL != "" {
 		client := gateway.NewClient(workspaceSettings)
-		if embedding, embedErr := client.Embed(ctx, parsed.Query, workspaceSettings); embedErr == nil && len(embedding) > 0 {
+		embedCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+		if embedding, embedErr := client.Embed(embedCtx, parsed.Query, workspaceSettings); embedErr == nil && len(embedding) > 0 {
 			queryEmbedding = embedding
 		}
+		cancel()
 	}
 	limit := request.Limit
 	if limit <= 0 {

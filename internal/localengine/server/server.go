@@ -58,7 +58,7 @@ func (handler *Handler) handleAudit(responseWriter http.ResponseWriter, request 
 		return
 	}
 	if body.SampleLimit == 0 {
-		body.SampleLimit = 500
+		body.SampleLimit = 25
 	}
 	audit, err := inventory.AuditSource(body.SourcePath, body.SampleLimit)
 	if err != nil {

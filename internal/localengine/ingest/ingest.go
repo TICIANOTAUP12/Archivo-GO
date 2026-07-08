@@ -35,35 +35,59 @@ func NewService(repo *repository.Repository, loadSettings func() (settings.Works
 }
 
 func (service *Service) IngestSource(ctx context.Context, request models.IngestRequest) (models.IngestResponse, error) {
-	audit, err := inventory.AuditSource(request.SourcePath, 500)
-	if err != nil {
-		return models.IngestResponse{}, err
-	}
-	runID := audit.RunID
-	if request.RunID != nil && *request.RunID != "" {
-		runID = *request.RunID
-	}
 	limit := request.MaxDocuments
 	files, err := inventory.DiscoverSupportedFiles(request.SourcePath, limit)
 	if err != nil {
 		return models.IngestResponse{}, err
 	}
+	if len(files) == 0 {
+		return models.IngestResponse{}, fmt.Errorf("no hay PDFs ni imágenes compatibles en la carpeta")
+	}
+
+	var (
+		runID            string
+		estimatedCostUSD float64
+		totalFiles       int
+		totalPages       int
+		scannedPages     int
+	)
+
+	if request.RunID != nil && strings.TrimSpace(*request.RunID) != "" {
+		runID = strings.TrimSpace(*request.RunID)
+		totalFiles = len(files)
+	} else {
+		sampleLimit := 25
+		if request.SampleLimit > 0 {
+			sampleLimit = request.SampleLimit
+		}
+		audit, auditErr := inventory.AuditSource(request.SourcePath, sampleLimit)
+		if auditErr != nil {
+			return models.IngestResponse{}, auditErr
+		}
+		runID = audit.RunID
+		totalFiles = audit.TotalFiles
+		totalPages = audit.TotalPages
+		scannedPages = audit.ScannedPages
+		estimatedCostUSD = audit.Estimate.TotalHighUSD
+	}
+
 	if request.DryRun {
 		return models.IngestResponse{
 			RunID:            runID,
 			QueuedDocuments:  len(files),
 			DryRun:           true,
-			EstimatedCostUSD: audit.Estimate.TotalHighUSD,
+			EstimatedCostUSD: estimatedCostUSD,
 		}, nil
 	}
+
 	workspaceSettings, err := service.loadSettings()
 	if err != nil {
 		return models.IngestResponse{}, err
 	}
-	if audit.Estimate.TotalHighUSD > workspaceSettings.MaxRunBudgetUSD {
-		return models.IngestResponse{}, fmt.Errorf("estimated cost USD %.2f exceeds budget USD %.2f", audit.Estimate.TotalHighUSD, workspaceSettings.MaxRunBudgetUSD)
+	if estimatedCostUSD > 0 && estimatedCostUSD > workspaceSettings.MaxRunBudgetUSD {
+		return models.IngestResponse{}, fmt.Errorf("estimated cost USD %.2f exceeds budget USD %.2f", estimatedCostUSD, workspaceSettings.MaxRunBudgetUSD)
 	}
-	if err := service.repo.SaveRun(runID, request.SourcePath, "processing", audit.TotalFiles, audit.TotalPages, audit.ScannedPages, audit.Estimate.TotalHighUSD); err != nil {
+	if err := service.repo.SaveRun(runID, request.SourcePath, "processing", totalFiles, totalPages, scannedPages, estimatedCostUSD); err != nil {
 		return models.IngestResponse{}, err
 	}
 	go service.processFiles(context.Background(), files, runID)
@@ -71,7 +95,7 @@ func (service *Service) IngestSource(ctx context.Context, request models.IngestR
 		RunID:            runID,
 		QueuedDocuments:  len(files),
 		DryRun:           false,
-		EstimatedCostUSD: audit.Estimate.TotalHighUSD,
+		EstimatedCostUSD: estimatedCostUSD,
 	}, nil
 }
 
